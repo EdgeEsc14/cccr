@@ -131,7 +131,7 @@ Con $D/h_x^2 = D/h_y^2 = 1$, $\Sigma_a = 0$ y $S = 1$ queda el "stencil" de cinc
 	\end{tikzpicture}
 \end{center}
 
-\paso{5}{Error de truncamiento}
+\paso{4}{Error de truncamiento}
 El error de truncamiento es lo que sobra al meter la solución \emph{exacta} en el esquema:
 \begin{align*}
 \tau_{ij} = &-D\,\frac{\varphi(x_{i+1}, y_j) - 2\varphi(x_i, y_j) + \varphi(x_{i-1}, y_j)}{h_x^2}\\
@@ -195,7 +195,7 @@ Sustituyendo cada $(i, j)$ en
 \end{align*}
 La frontera es Dirichlet homogénea
 
-\paso{3}{Sistema y estructura por bloques}
+\paso{2}{Sistema y estructura por bloques}
 \[
 \underbrace{\left(\begin{array}{cc|cc}
 		4 & -1 & -1 &  0\\
@@ -257,7 +257,7 @@ Se escribe $\mat{A} = \mat{G}\mat{G}^T$ con todas las incognitas
 	g_{41}^2 + g_{42}^2 + g_{43}^2 + g_{44}^2 &= a_{44} = 4 & &\Rightarrow\ g_{44} = \sqrt{4 - \tfrac{4}{15} - \tfrac{32}{105}} = \sqrt{\tfrac{24}{7}}
 \end{align*}
 
-\paso{3}{Resultado}
+\paso{2}{Resultado}
 \[
 \mat{G} =
 \begin{pmatrix}
@@ -275,12 +275,6 @@ Se escribe $\mat{A} = \mat{G}\mat{G}^T$ con todas las incognitas
 	0 & 0 & 0 & \sqrt{\tfrac{24}{7}}
 \end{pmatrix}
 \]
-\resultado{\mat{G}^T =\begin{pmatrix}
-		2 & -\tfrac12 & -\tfrac12 & 0\\[2pt]
-		0 & \tfrac{\sqrt{15}}{2} & -\tfrac{1}{2\sqrt{15}} & -\tfrac{2}{\sqrt{15}}\\[2pt]
-		0 & 0 & \sqrt{\tfrac{56}{15}} & -\tfrac{8}{\sqrt{210}}\\[2pt]
-		0 & 0 & 0 & \sqrt{\tfrac{24}{7}}
-\end{pmatrix}}
 
 
 \inciso{d}{Solución del sistema con \texorpdfstring{$\mat{G}$}{G}}
@@ -376,9 +370,6 @@ Una malla de $n\times n$ nodos interiores corresponde a $I = J = n+1$.
 Hay una incógnita por nodo interior, es decir $n\cdot n = n^2$ incógnitas y $n^2$ ecuaciones:
 \resultado{\mat{A}\ \text{es de tamaño}\ n^2\times n^2}
 
-\textit{Ancho de banda}
-
-Con ordenamiento fila por fila, el nodo $k$ se acopla con $k\pm1$ (horizontal) y con $k\pm n$ (vertical). El no cero más lejano de la diagonal es $a_{k,k\pm n}$:
 \textit{Ancho de banda}
 
 Con ordenamiento fila por fila, el nodo $k$ se acopla con $k\pm1$ (horizontal) y con $k\pm n$ (vertical). El no cero más lejano de la diagonal es $a_{k,k\pm n}$.

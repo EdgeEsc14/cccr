@@ -1,7 +1,8 @@
 /*
 !/latex/
-!/python/
 !/Programas/
+/Programas/*
+!/Programas/programas.ipynb
 !/.gitignore
 
 latex/build/

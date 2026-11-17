@@ -1,9 +1,9 @@
 
-\newpage
+\parte{V}{Preguntas conceptuales}{10}
+
 \subsection*{C1. Errores y teorema de Lax--Richtmyer\hfill[2 pts]}
 \addcontentsline{toc}{subsection}{C1. Errores y Lax--Richtmyer}
-Distinga error de truncamiento, error local y error global. Enuncie la relación entre
-consistencia, estabilidad y convergencia (Lax--Richtmyer).
+Distinga error de truncamiento, error local y error global. Enuncie la relación entre consistencia, estabilidad y convergencia (Lax--Richtmyer).
 \respuesta{%
 	Se tienen 3 errores 
 	
@@ -14,12 +14,10 @@ consistencia, estabilidad y convergencia (Lax--Richtmyer).
 	\textbf{Error global.} Es la diferencia entre la solución exacta y la numérica en un nodo tiene la acumulacion de los errores locales 
 	
 	\textbf{Consistencia, estabilidad y convergencia.} El teorema de equivalencia de
-	Lax--Richtmyer establece que, para un problema de valor inicial lineal bien planteado y un esquema
-	consistente, el esquema es convergente si y solo si es estable:
-	\[
-	\text{consistencia} + \text{estabilidad} \iff \text{convergencia}
-	\]
+	Lax--Richtmyer establece que, dado un problema de valor inicial lineal bien planteado y una aproximación en diferencias finitas que cumple la condición de consistencia, la estabilidad es condición necesaria y suficiente  para la convergencia
 }
+
+Esto lo lei de su articulo Survey of the Stability of Linear Finite Difference Equations, LAX and R. D. RICHTMYEK
 
 \subsection*{C2. Del error local al error global\hfill[2 pts]}
 \addcontentsline{toc}{subsection}{C2. Del error local al global}
@@ -40,7 +38,7 @@ Defina el radio espectral y la razón de dominancia. Cómo determinan la rapidez
 del método de las potencias y de una iteración $\vect{x}^{(n+1)} = \mat{M}\vect{x}^{(n)} + \vect{c}$?
 Qué consecuencia tiene un $\rho_D$ cercano a 1 en un núcleo grande y débilmente acoplado?
 \respuesta{%
-	\textbf{Radio espectral.} Es el mayor de los valores propios de la matriz de iteración
+	\textbf{Radio espectral.} Es el mayor de los módulos de los valores propios de la matriz de iteración, $\rho(\mat{M}) = \max_i |\lambda_i|$
 	
 	\textbf{Razón de dominancia.} Es el cociente entre el segundo valor propio y el dominante:
 	\[
@@ -48,7 +46,7 @@ Qué consecuencia tiene un $\rho_D$ cercano a 1 en un núcleo grande y débilmen
 	\]
 	
 	
-	La consecuencia de Si $rho_D$ esta cerca de 1 es que el método de las potencias converge muy lento
+	La consecuencia de Si $\rho_D$ esta cerca de 1 es que el método de las potencias converge muy lento
 
 }
 
