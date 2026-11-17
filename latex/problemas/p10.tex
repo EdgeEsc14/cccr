@@ -1,0 +1,165 @@
+\problema{10}{Método de Wielandt}{6}
+
+\begin{enunciado}
+	Con los datos del Problema 9 y un corrimiento $k_s = 1.3$:
+	\begin{enumerate}[label=(\alph*)]
+		\item Deduzca la iteración $\left(\mat{A} - \frac{1}{k_s}\mat{F}\right)\vect{\varphi}^{(n+1)} = \mat{F}\vect{\varphi}^{(n)}$
+		y muestre que su razón de convergencia es $\left|\dfrac{1/k_1 - 1/k_s}{1/k_2 - 1/k_s}\right|$.
+		\item Verifique que $\mat{A} - \mat{F}/k_s$ es simétrica definida positiva y puede factorizarse con
+		Cholesky. ¿Qué sucede si $k_s < \keff$?
+		\item Realice una iteración desde $\vect{\varphi}^{(0)} = (1, 1, 1)^T$ y estime $k$ con
+		$\dfrac1k \approx \dfrac1{k_s} + \dfrac{\vect{1}^T\mat{F}\vect{\varphi}^{(n)}}{\vect{1}^T\mat{F}\vect{\varphi}^{(n+1)}}$.
+		\item Calcule la nueva razón de dominancia y el número de iteraciones para reducir el error en
+		$10^{-6}$. Compare con el método de las potencias.
+	\end{enumerate}
+\end{enunciado}
+
+% ---------------------------------------------------------------------
+\subsubsection*{Solución}
+% ---------------------------------------------------------------------
+Para este problema me basé en el documento Power WielandtMethods2.pdf, el desplazamiento, la razon de dominancia y el algoritmo
+
+Datos:
+\[
+\frac{1}{k_s} = \frac{1}{1.3} = \frac{10}{13},\qquad
+\frac{1}{k_s}\mat{F} = \frac{10}{13}(2\mat{I}) = \frac{20}{13}\mat{I},\qquad
+\mat{A} - \frac{1}{k_s}\mat{F} = \tridiag\left(-1,\ 3 - \tfrac{20}{13},\ -1\right) = \tridiag\left(-1,\ \tfrac{19}{13},\ -1\right).
+\]
+
+\inciso{a}{Iteración de Wielandt y su razón de convergencia}
+
+
+\paso{1}{Desplazamiento}
+Se parte de $\mat{A}\vect{\varphi} = \frac1k\mat{F}\vect{\varphi}$ y se resta $\frac{1}{k_s}\mat{F}\vect{\varphi}$ de los dos lados:
+\begin{align*}
+	\mat{A}\vect{\varphi} - \frac{1}{k_s}\mat{F}\vect{\varphi} &= \frac1k\mat{F}\vect{\varphi} - \frac{1}{k_s}\mat{F}\vect{\varphi}\\
+	\left(\mat{A} - \frac{1}{k_s}\mat{F}\right)\vect{\varphi} &= \left(\frac1k - \frac{1}{k_s}\right)\mat{F}\vect{\varphi}
+\end{align*}
+Si $\mat{A} - \frac{1}{k_s}\mat{F}$ es invertible, multiplicando por su inversa y dividiendo entre $\frac1k - \frac1{k_s}$:
+\[
+\left(\mat{A} - \frac{1}{k_s}\mat{F}\right)^{-1}\mat{F}\,\vect{\varphi} = \gamma\,\vect{\varphi},
+\qquad \gamma = \frac{1}{\dfrac1k - \dfrac{1}{k_s}} .
+\]
+Es otro problema de valores propios con los mismos vectores propios; a cada $k_j$ le corresponde
+\[
+\gamma_j = \frac{1}{\dfrac{1}{k_j} - \dfrac{1}{k_s}} .
+\]
+
+\paso{2}{Iteración}
+Aplicando el método de las potencias a $\left(\mat{A} - \frac{1}{k_s}\mat{F}\right)^{-1}\mat{F}$:
+\[
+\vect{\varphi}^{(n+1)} = \left(\mat{A} - \frac{1}{k_s}\mat{F}\right)^{-1}\mat{F}\vect{\varphi}^{(n)}
+\]
+\resultado{\left(\mat{A} - \frac{1}{k_s}\mat{F}\right)\vect{\varphi}^{(n+1)} = \mat{F}\vect{\varphi}^{(n)}}
+
+
+\paso{3}{Razón de convergencia}
+Escribiendo $\vect{\varphi}^{(0)} = \sum_j c_j\vect{v}_j$ y aplicando $n$ veces:
+\[
+\vect{\varphi}^{(n)} = \sum_j c_j\gamma_j^{\,n}\vect{v}_j
+= \gamma_1^{\,n}\left[c_1\vect{v}_1 + c_2\left(\frac{\gamma_2}{\gamma_1}\right)^n\vect{v}_2
++ c_3\left(\frac{\gamma_3}{\gamma_1}\right)^n\vect{v}_3\right].
+\]
+Con $k_s$ un poco arriba de $k_1$, $\frac1{k_s}$ queda un poco abajo de $\frac1{k_1}$, que es el más chico de los
+$\frac1{k_j}$. Entonces $\left|\frac1{k_1} - \frac1{k_s}\right|$ es la diferencia más chica, $|\gamma_1|$ es el más grande
+y le sigue $\gamma_2$:
+\[
+\left|\frac{\gamma_2}{\gamma_1}\right|
+= \left|\frac{1\big/\left(\frac1{k_2} - \frac1{k_s}\right)}{1\big/\left(\frac1{k_1} - \frac1{k_s}\right)}\right|
+= \left|\frac{\frac1{k_1} - \frac1{k_s}}{\frac1{k_2} - \frac1{k_s}}\right|
+\]
+\resultado{\rho_W = \left|\frac{1/k_1 - 1/k_s}{1/k_2 - 1/k_s}\right|}
+Mientras más cerca esté $k_s$ de $k_1$, más chico el numerador y más rápido converge.
+
+
+\inciso{b}{\texorpdfstring{$\mat{A} - \mat{F}/k_s$}{A - F/ks} simétrica definida positiva}
+
+
+\paso{1}{Simetria}
+$\mat{A}$ es simtrica y $\frac{1}{k_s}\mat{F} = \frac{20}{13}\mat{I}$ también, así que la resta es simetrica:
+\[
+\mat{A} - \frac{1}{k_s}\mat{F} = \begin{pmatrix} \frac{19}{13} & -1 & 0\\ -1 & \frac{19}{13} & -1\\ 0 & -1 & \frac{19}{13} \end{pmatrix}.
+\]
+
+\paso{2}{Valores propios}
+Como $\mat{F} = 2\mat{I}$, si $\mat{A}\vect{v}_j = \mu_j\vect{v}_j$:
+\[
+\left(\mat{A} - \frac{2}{k_s}\mat{I}\right)\vect{v}_j = \left(\mu_j - \frac{2}{k_s}\right)\vect{v}_j .
+\]
+Con $\frac{2}{k_s} = \frac{20}{13}$ y los $\mu_j$ del Problema 9
+\begin{align*}
+	\mu_1 - \tfrac{20}{13} &= 3 - \sqrt2 - \tfrac{20}{13} = \tfrac{19}{13} - \sqrt2 \approx 0.0473249\\
+	\mu_2 - \tfrac{20}{13} &= 3 - \tfrac{20}{13} = \tfrac{19}{13} \approx 1.46154\\
+	\mu_3 - \tfrac{20}{13} &= \tfrac{19}{13} + \sqrt2 \approx 2.87575
+\end{align*}
+
+
+\paso{3}{Factorización}
+$a = \frac{19}{13}$, $b = -1$
+\begin{align*}
+	d_1 &= a = \tfrac{19}{13}\\
+	l_1 &= \tfrac{b}{d_1} = -\tfrac{13}{19}\\
+	d_2 &= a - l_1^2 d_1 = \tfrac{19}{13} - \tfrac{13}{19} = \tfrac{361 - 169}{247} = \tfrac{192}{247}\\
+	l_2 &= \tfrac{b}{d_2} = -\tfrac{247}{192}\\
+	d_3 &= a - l_2^2 d_2 = \tfrac{19}{13} - \tfrac{247}{192} = \tfrac{3648 - 3211}{2496} = \tfrac{437}{2496}
+\end{align*}
+Comprobación: $d_1 d_2 d_3 = \frac{19}{13}\cdot\frac{192}{247}\cdot\frac{437}{2496} = \frac{437}{2197}$ y el producto de
+valores propios es $\frac{19}{13}\left(\frac{361}{169} - 2\right) = \frac{19}{13}\cdot\frac{23}{169} = \frac{437}{2197}$
+Los tres pivotes son positivos, entonces Cholesky existe: $\mat{A} - \frac{1}{k_s}\mat{F} = \mat{G}\mat{G}^T$ con
+$\mat{G} = \mat{L}\mat{D}^{1/2}$ y diagonal $\sqrt{d_i}$ real.
+Se puede factorizar con chlesky
+
+\paso{4}{Si $k_s < \keff$}
+Si $k_s < k_1$, entonces $\frac{2}{k_s} > \frac{2}{k_1} = \mu_1$ y
+\[
+\mu_1 - \frac{2}{k_s} < 0 .
+\]
+
+\inciso{c}{Una iteración}
+
+\paso{1}{Fuente}
+\[
+\mat{F}\vect{\varphi}^{(0)} = 2(1, 1, 1)^T = (2, 2, 2)^T .
+\]
+
+\paso{2}{vamos a resolver $\left(\mat{A} - \frac1{k_s}\mat{F}\right)\vect{\varphi}^{(1)} = (2, 2, 2)^T$ con $\mat{L}\mat{D}\mat{L}^T$}
+Adelante, $y_1 = q_1$, $y_2 = q_2 + \frac{13}{19}y_1$, $y_3 = q_3 + \frac{247}{192}y_2$:
+\[
+y_1 = 2,\qquad
+y_2 = 2 + \tfrac{13}{19}(2) = \tfrac{64}{19},\qquad
+y_3 = 2 + \tfrac{247}{192}\left(\tfrac{64}{19}\right) = 2 + \tfrac{13}{3} = \tfrac{19}{3} .
+\]
+Diagonal, $z_i = y_i/d_i$:
+\[
+z_1 = \frac{2}{19/13} = \frac{26}{19},\qquad
+z_2 = \frac{64/19}{192/247} = \frac{64\cdot 247}{19\cdot 192} = \frac{13}{3},\qquad
+z_3 = \frac{19/3}{437/2496} = \frac{19\cdot 2496}{3\cdot 437} = \frac{832}{23} .
+\]
+Atrás, $\varphi_3 = z_3$, $\varphi_2 = z_2 + \frac{247}{192}\varphi_3$, $\varphi_1 = z_1 + \frac{13}{19}\varphi_2$:
+\begin{align*}
+	\varphi_3 &= \tfrac{832}{23}\\
+	\varphi_2 &= \tfrac{13}{3} + \tfrac{247}{192}\left(\tfrac{832}{23}\right) = \tfrac{13}{3} + \tfrac{3211}{69}
+	= \tfrac{299}{69} + \tfrac{3211}{69} = \tfrac{3510}{69} = \tfrac{1170}{23}\\
+	\varphi_1 &= \tfrac{26}{19} + \tfrac{13}{19}\left(\tfrac{1170}{23}\right) = \tfrac{598}{437} + \tfrac{15210}{437}
+	= \tfrac{15808}{437} = \tfrac{832}{23}
+\end{align*}
+\resultado{\vect{\varphi}^{(1)} = \tfrac{1}{23}\left(832,\ 1170,\ 832\right)^T \approx (36.1739,\ 50.8696,\ 36.1739)^T}
+
+\paso{3}{Estimación de $k$}
+despejando $\frac1k$:
+\begin{align*}
+	\left(\frac1k - \frac1{k_s}\right)\vect{1}^T\mat{F}\vect{\varphi}^{(n+1)} &= \vect{1}^T\mat{F}\vect{\varphi}^{(n)}\\
+	\frac1k &= \frac1{k_s} + \frac{\vect{1}^T\mat{F}\vect{\varphi}^{(n)}}{\vect{1}^T\mat{F}\vect{\varphi}^{(n+1)}}
+\end{align*}
+Sustituyendo:
+\[
+\vect{1}^T\mat{F}\vect{\varphi}^{(0)} = 6,\qquad
+\vect{1}^T\mat{F}\vect{\varphi}^{(1)} = 2\left(\frac{832 + 1170 + 832}{23}\right) = \frac{5668}{23}
+\]
+\[
+\frac{1}{k} \approx \frac{10}{13} + \frac{6}{5668/23} = \frac{10}{13} + \frac{138}{5668}
+= \frac{10}{13} + \frac{69}{2834} = \frac{2180}{2834} + \frac{69}{2834} = \frac{2249}{2834} = \frac{173}{218}
+\]
+\resultado{k \approx \frac{218}{173} \approx 1.26012}
+
+\inciso{d}{Nueva razón de dominancia y número de iteraciones}

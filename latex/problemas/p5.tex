@@ -1,0 +1,222 @@
+\problema{5}{Condiciones de frontera de Neumann y Robin}{5}
+
+\begin{enunciado}
+	Con nodos $x_0, \dots, x_N$ y $x_N = L$, se imponen $\varphi'(0) = 0$ (Neumann) y
+	$D\varphi'(L) + \gamma\varphi(L) = 0$ (Robin).
+	\begin{enumerate}[label=(\alph*)]
+		\item Usando nodos fantasma $x_{-1}$ y $x_{N+1}$ con diferencias centrales, deduzca las
+		ecuaciones de los nodos $0$ y $N$.
+		\item Por qué la matriz resultante pierde la simetría? Cómo se recupera?
+		\item Si en lugar de nodos fantasma se usa $\varphi'(0) \approx (\varphi_1 - \varphi_0)/h$,
+		qué ocurre con el orden global? Justifique.
+		\item Para $N = 3$, $h = 2$, $D = 1$, $\Sigma_a = \tfrac12$, $\gamma = \tfrac12$, $S = 1$
+		escriba la matriz $4\times4$ y resuelva.
+	\end{enumerate}
+\end{enunciado}
+
+
+\subsubsection*{Solución}
+
+Este problema esta muy bueno y me costo mucho entenderlo porque a diferencia del problema 4 se conocían $\varphi_0$ y $\varphi_N$eso nos ahorraba esos nodos y ya solamente nos "preocupabamos" por los los nodos interiores. Peeero aquí lo unico que se conoce en la frontera es la derivada ($\varphi'(0) = 0$ y $D\varphi'(L) + \gamma\varphi(L) = 0$), por lo que $\varphi_0$ y $\varphi_N$ son incognitas y se necesita escribir igual su ecuacion 
+
+Pero como podemos ver necesitamos nodos vecinos a la izq y la derecha entonces ahi metemos los nodos fantasma
+
+
+\inciso{a}{Ecuaciones de los nodos $0$ y $N$ con nodos fantasma}
+
+
+\paso{1}{Nodos interiores}
+Para $i = 1, \dots, N-1$ la ecuación es la del Problema 4 (a):
+\[
+-D\,\varphi_{i-1} + \left(2D + \Sigma_a h^2\right)\varphi_i - D\,\varphi_{i+1} = S\,h^2 .
+\]
+
+\paso{2}{Nodo $0$ (Neumann)}
+La ecuación del nodo $0$ necesita un vecino a la izquierda, $\varphi_{-1}$, que está fuera del dominio (nodo fantasma):
+\[
+-D\,\frac{\varphi_{-1} - 2\varphi_0 + \varphi_1}{h^2} + \Sigma_a\,\varphi_0 = S .
+\]
+Se elimina con la condición de frontera, aproximando $\varphi'(0)$ con la diferencia centrada que usa al fantasma:
+\[
+\frac{\varphi_1 - \varphi_{-1}}{2h} = 0
+\quad\Longrightarrow\quad
+\varphi_1 - \varphi_{-1} = 0
+\quad\Longrightarrow\quad
+\varphi_{-1} = \varphi_1
+\]
+Se sustituye $\varphi_{-1} = \varphi_1$ en la ecuación del nodo $0$:
+\[
+-D\,\frac{\varphi_{-1} - 2\varphi_0 + \varphi_1}{h^2} + \Sigma_a\,\varphi_0 = S
+\qquad\Longrightarrow\qquad
+-D\,\frac{\varphi_1 - 2\varphi_0 + \varphi_1}{h^2} + \Sigma_a\,\varphi_0 = S .
+\]
+
+\[
+-D\,\frac{2\varphi_1 - 2\varphi_0}{h^2} + \Sigma_a\,\varphi_0 = S .
+\]
+\[
+-\frac{2D}{h^2}\,\varphi_1 + \frac{2D}{h^2}\,\varphi_0 + \Sigma_a\,\varphi_0 = S
+\]
+\[
+\left(\frac{2D}{h^2} + \Sigma_a\right)\varphi_0 - \frac{2D}{h^2}\,\varphi_1 = S .
+\]
+
+\resultado{\left(2D + \Sigma_a h^2\right)\varphi_0 - 2D\,\varphi_1 = S\,h^2}
+
+
+\paso{3}{Nodo $N$ (Robin)}
+La ecuación del nodo $N$ necesita al fantasma $\varphi_{N+1}$:
+\[
+-D\,\frac{\varphi_{N-1} - 2\varphi_N + \varphi_{N+1}}{h^2} + \Sigma_a\,\varphi_N = S
+\]
+La derivada en $x_N$
+\[
+\varphi'(x_N) \approx \frac{\varphi_{N+1} - \varphi_{N-1}}{2h} 
+\]
+Se sustituye en la condición de frontera $D\varphi'(L) + \gamma\varphi(L) = 0$:
+\[
+D\,\frac{\varphi_{N+1} - \varphi_{N-1}}{2h} + \gamma\,\varphi_N = 0 
+\]
+\[
+D\left(\varphi_{N+1} - \varphi_{N-1}\right) + 2h\gamma\,\varphi_N = 0 
+\]
+\[
+D\,\varphi_{N+1} = D\,\varphi_{N-1} - 2h\gamma\,\varphi_N 
+\]
+\[
+\varphi_{N+1} = \varphi_{N-1} - \frac{2h\gamma}{D}\,\varphi_N 
+\]
+\[
+\varphi_{N-1} - 2\varphi_N + \varphi_{N+1}
+= \varphi_{N-1} - 2\varphi_N + \left(\varphi_{N-1} - \frac{2h\gamma}{D}\,\varphi_N\right)
+= 2\varphi_{N-1} - 2\varphi_N - \frac{2h\gamma}{D}\,\varphi_N
+\]
+\[
+-D\,\frac{2\varphi_{N-1} - 2\varphi_N - \frac{2h\gamma}{D}\,\varphi_N}{h^2} + \Sigma_a\,\varphi_N = S
+\]
+Reacomodando
+\[
+-\frac{2D}{h^2}\,\varphi_{N-1} + \frac{2D}{h^2}\,\varphi_N + \frac{2\gamma}{h}\,\varphi_N + \Sigma_a\,\varphi_N = S 
+\]
+agrupamiento
+\[
+-\frac{2D}{h^2}\,\varphi_{N-1} + \left(\frac{2D}{h^2} + \frac{2\gamma}{h} + \Sigma_a\right)\varphi_N = S 
+\]
+Se multiplica por $h^2$:
+\resultado{-2D\,\varphi_{N-1} + \left(2D + 2\gamma h + \Sigma_a h^2\right)\varphi_N = S\,h^2}
+
+\inciso{b}{Pérdida de la simetría y cómo se recupera}
+
+\paso{1}{Matriz del sistema}
+
+Ecuaciones 
+\begin{align*}
+	\text{Nodo } 0:\quad & \left(2D + \Sigma_a h^2\right)\varphi_0 - 2D\,\varphi_1 = S\,h^2\\
+	\text{Nodo } i:\quad & -D\,\varphi_{i-1} + \left(2D + \Sigma_a h^2\right)\varphi_i - D\,\varphi_{i+1} = S\,h^2, \qquad i = 1, \dots, N-1\\
+	\text{Nodo } N:\quad & -2D\,\varphi_{N-1} + \left(2D + 2\gamma h + \Sigma_a h^2\right)\varphi_N = S\,h^2
+\end{align*}
+
+
+Al acomodar en la matriz
+\[
+\underbrace{
+	\begin{pmatrix}
+		2D + \Sigma_a h^2 & -2D & & & \\
+		-D & 2D + \Sigma_a h^2 & -D & & \\
+		& \ddots & \ddots & \ddots & \\
+		& & -D & 2D + \Sigma_a h^2 & -D\\
+		& & & -2D & 2D + 2\gamma h + \Sigma_a h^2
+\end{pmatrix}}_{\mat{A}}
+\underbrace{\begin{pmatrix} \varphi_0\\ \varphi_1\\ \vdots\\ \varphi_{N-1}\\ \varphi_N \end{pmatrix}}_{\vect{\varphi}}
+=
+\underbrace{S\,h^2\begin{pmatrix} 1\\ 1\\ \vdots\\ 1\\ 1 \end{pmatrix}}_{\vect{b}}
+\]
+La matriz es tridiagonal pero comparandola con el poblema 4 es que cambia su tamaño aqui es de $N+1$ y antes $N-1$ porque ahora $\varphi_0$ y $\varphi_N$ son incognitas 
+
+\paso{2}{Por qué no es simétrica}
+$\mat{A}$ es simétrica si $a_{ij} = a_{ji}$. En el renglón $0$ el coeficiente de $\varphi_1$ es $-2D$ y en el renglón $1$ el coeficiente de $\varphi_0$ es $-D$ al igual que para el otro extremo los demas si cumplen pero por esos dos ya no es simetrico 
+
+\paso{3}{recuperar simetria}
+Se multiplican por $\tfrac12$ solo los renglones $0$ y $N$ o sea se por alguna matriz$\mat{B} = \text{diag}\left(\tfrac12, 1, \dots, 1, \tfrac12\right)$ 
+
+
+
+\inciso{c}{Orden global con la diferencia hacia adelante en $x_0$}
+
+
+\inciso{d}{Matriz $4\times4$ y solución para $N = 3$}
+
+
+\paso{1}{Datos}
+$L = N\,h = 3(2) = 6$, $x_0 = 0$, $x_1 = 2$, $x_2 = 4$, $x_3 = 6$
+\begin{align*}
+	2D + \Sigma_a h^2 &= 2(1) + \tfrac12(2)^2 = 2 + 2 = 4\\
+	2D + 2\gamma h + \Sigma_a h^2 &= 2(1) + 2\left(\tfrac12\right)(2) + \tfrac12(2)^2 = 2 + 2 + 2 = 6\\
+	S\,h^2 &= (1)(2)^2 = 4
+\end{align*}
+
+\paso{2}{Ecuaciones nodo por nodo}
+\begin{align*}
+	\text{Nodo 0:}&\quad 4\varphi_0 - 2\varphi_1 = 4\\
+	\text{Nodo 1:}&\quad -\varphi_0 + 4\varphi_1 - \varphi_2 = 4\\
+	\text{Nodo 2:}&\quad -\varphi_1 + 4\varphi_2 - \varphi_3 = 4\\
+	\text{Nodo 3:}&\quad -2\varphi_2 + 6\varphi_3 = 4
+\end{align*}
+
+\paso{3}{Matriz}
+\resultado{
+	\underbrace{\begin{pmatrix} 4 & -2 & 0 & 0\\ -1 & 4 & -1 & 0\\ 0 & -1 & 4 & -1\\ 0 & 0 & -2 & 6 \end{pmatrix}}_{\mat{A}}
+	\underbrace{\begin{pmatrix} \varphi_0\\ \varphi_1\\ \varphi_2\\ \varphi_3 \end{pmatrix}}_{\vect{\varphi}}
+	=
+	\underbrace{\begin{pmatrix} 4\\ 4\\ 4\\ 4 \end{pmatrix}}_{\vect{b}}
+}
+No es simétrica
+
+\paso{4}{Versión simétrica}
+Se multiplican por $\tfrac12$ los renglones del nodo $0$ y del nodo $3$ (inciso (b)):
+\[
+\begin{pmatrix} 2 & -1 & 0 & 0\\ -1 & 4 & -1 & 0\\ 0 & -1 & 4 & -1\\ 0 & 0 & -1 & 3 \end{pmatrix}
+\begin{pmatrix} \varphi_0\\ \varphi_1\\ \varphi_2\\ \varphi_3 \end{pmatrix}
+=
+\begin{pmatrix} 2\\ 4\\ 4\\ 2 \end{pmatrix}
+\]
+
+\paso{5}{Factorización $\mat{L}\mat{D}\mat{L}^T$}
+Se numeran los renglones de $1$ a $4$ 
+\[
+l_{k,k-1} = \frac{a_{k,k-1}}{d_{k-1}}, \qquad d_k = a_{kk} - l_{k,k-1}^2\,d_{k-1} .
+\]
+\begin{align*}
+	d_1 &= 2\\
+	l_{21} &= \frac{-1}{2} = -\frac12, \qquad d_2 = 4 - \left(-\tfrac12\right)^2(2) = 4 - \tfrac12 = \tfrac72\\
+	l_{32} &= \frac{-1}{\frac72} = -\frac27, \qquad d_3 = 4 - \left(-\tfrac27\right)^2\left(\tfrac72\right) = 4 - \tfrac{4}{49}\cdot\tfrac72 = 4 - \tfrac27 = \tfrac{26}{7}\\
+	l_{43} &= \frac{-1}{\frac{26}{7}} = -\frac{7}{26}, \qquad d_4 = 3 - \left(-\tfrac{7}{26}\right)^2\left(\tfrac{26}{7}\right) = 3 - \tfrac{49}{676}\cdot\tfrac{26}{7} = 3 - \tfrac{7}{26} = \tfrac{71}{26}
+\end{align*}
+
+\paso{6}{Sustitución hacia adelante, $\mat{L}\vect{z} = \vect{b}$}
+Con $\vect{b} = (2, 4, 4, 2)^T$, $z_1 = b_1$ y $z_k = b_k - l_{k,k-1}\,z_{k-1}$:
+\begin{align*}
+	z_1 &= 2\\
+	z_2 &= 4 - \left(-\tfrac12\right)(2) = 4 + 1 = 5\\
+	z_3 &= 4 - \left(-\tfrac27\right)(5) = 4 + \tfrac{10}{7} = \tfrac{38}{7}\\
+	z_4 &= 2 - \left(-\tfrac{7}{26}\right)\left(\tfrac{38}{7}\right) = 2 + \tfrac{38}{26} = 2 + \tfrac{19}{13} = \tfrac{45}{13}
+\end{align*}
+
+\paso{7}{Sistema diagonal, $\mat{D}\vect{y} = \vect{z}$}
+\begin{align*}
+	y_1 &= \frac{z_1}{d_1} = \frac{2}{2} = 1\\
+	y_2 &= \frac{z_2}{d_2} = \frac{5}{\frac72} = \frac{10}{7}\\
+	y_3 &= \frac{z_3}{d_3} = \frac{\frac{38}{7}}{\frac{26}{7}} = \frac{38}{26} = \frac{19}{13}\\
+	y_4 &= \frac{z_4}{d_4} = \frac{\frac{45}{13}}{\frac{71}{26}} = \frac{45}{13}\cdot\frac{26}{71} = \frac{90}{71}
+\end{align*}
+
+\paso{8}{Sustitución hacia atrás, $\mat{L}^T\vect{\varphi} = \vect{y}$}
+Con $\varphi_3 = y_4$ y $\varphi_{k-1} = y_k - l_{k+1,k}\,\varphi_k$:
+\begin{align*}
+	\varphi_3 &= y_4 = \frac{90}{71}\\
+	\varphi_2 &= y_3 - l_{43}\,\varphi_3 = \frac{19}{13} + \frac{7}{26}\cdot\frac{90}{71} = \frac{19}{13} + \frac{315}{923} = \frac{1349}{923} + \frac{315}{923} = \frac{1664}{923} = \frac{128}{71}\\
+	\varphi_1 &= y_2 - l_{32}\,\varphi_2 = \frac{10}{7} + \frac27\cdot\frac{128}{71} = \frac{10}{7} + \frac{256}{497} = \frac{710}{497} + \frac{256}{497} = \frac{966}{497} = \frac{138}{71}\\
+	\varphi_0 &= y_1 - l_{21}\,\varphi_1 = 1 + \frac12\cdot\frac{138}{71} = 1 + \frac{69}{71} = \frac{140}{71}
+\end{align*}
+\resultado{\vect{\varphi} = \left(\frac{140}{71},\ \frac{138}{71},\ \frac{128}{71},\ \frac{90}{71}\right)^T \approx \left(1.971831,\ 1.943662,\ 1.802817,\ 1.267606\right)^T}
+

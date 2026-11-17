@@ -1,0 +1,17 @@
+/*
+!/latex/
+!/python/
+!/Programas/
+!/.gitignore
+
+latex/build/
+*.aux
+*.log
+*.out
+*.toc
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+__pycache__/
+.pytest_cache/
+.ipynb_checkpoints/

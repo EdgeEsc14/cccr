@@ -1,0 +1,33 @@
+% ---------------------------------------------------------------------
+%  Macros de notación (la del profesor).
+%  Si cambias una notación aquí, cambia en todo el documento.
+% ---------------------------------------------------------------------
+
+% Orden de error: \Order{h^2}  ->  O(h^2)
+\newcommand{\Order}[1]{\mathcal{O}\!\left(#1\right)}
+
+% Diferencial recto y derivada temporal: \ddt{u} -> du/dt
+\newcommand{\dd}{\mathrm{d}}
+\newcommand{\ddt}[1]{\frac{\dd #1}{\dd t}}
+
+% Valor EXACTO en un nodo:   \uex{\ell}  -> u(t_\ell)
+% Valor NUMÉRICO en un nodo: u_\ell      (se escribe directo)
+\newcommand{\uex}[1]{u(t_{#1})}
+
+% Punto medio entre nodos: t_{\lmed} -> t_{\ell+1/2}
+\newcommand{\lmed}{\ell+1/2}
+% Igual con índice n (notación del examen): t_{\nmed} -> t_{n+1/2}
+\newcommand{\nmed}{n+1/2}
+
+% Punto fijo / solución particular
+\newcommand{\ufijo}{u^{*}}
+
+% Orden de convergencia global / local (Sesión 02)
+\newcommand{\OCG}{\mathrm{OCG}}
+\newcommand{\OCL}{\mathrm{OCL}}
+
+% Matrices y vectores (para las Partes II–IV)
+\newcommand{\mat}[1]{\mathbf{#1}}
+\newcommand{\vect}[1]{\bm{#1}}
+\newcommand{\tridiag}{\operatorname{tridiag}}
+\newcommand{\keff}{k_{\mathrm{ef}}}

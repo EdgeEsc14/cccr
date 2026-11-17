@@ -1,0 +1,28 @@
+%\section{Equivalencia de notación}\label{ap:notacion}
+%
+%La notación principal del documento es la de los apuntes del curso. Esta tabla sirve para leer el
+%examen y LeVeque (\emph{Finite Difference Methods for Ordinary and Partial Differential Equations}).
+%
+%\begin{center}
+%\begin{tabular}{llll}\toprule
+%Concepto & Apuntes & Examen & LeVeque\\\midrule
+%Paso de tiempo                & $h$, $\Delta t$          & $h$, $\Delta t$ & $k$\\
+%Índice de tiempo              & $\ell = 0,\dots,L$       & $n$             & $n = 0,\dots,N$\\
+%Aproximación numérica         & $u_\ell$                 & $N_n$           & $U^n$\\
+%Valor exacto en el nodo       & $u(t_\ell)$              & $N(t_n)$        & $u(t_n)$\\
+%Constante de decaimiento      & $\alpha_0$               & $\lambda$       & $-\lambda$ (valor propio)\\
+%Fuente                        & $q_0$, $\mat{Q}(t)$      & $S$             & $g(t)$ dentro de $f(u,t)$\\
+%Tiempo final                  & $\tau$                   & $T$             & $T$\\
+%Factor de amplificación       & $r$                      & $R(z)$, $z = -\lambda h$ & $R(z)$, $z = k\lambda$\\
+%Método centrado               & centrada / CN            & CN              & trapezoidal\\
+%Error local                   & un paso: $\Order{h^{p+1}}$ & un paso       & $\tau^n = \Order{k^p}$\\
+%Error global                  & $\varepsilon(h)$, $\Order{h^p}$ & $E(h)$   & $E^n$, $\Order{k^p}$\\
+%Orden observado               & $\OCG = \ln R/\ln 2$     & $p_{\mathrm{glob}}$ & $\log_2(E(k)/E(k/2))$\\\bottomrule
+%\end{tabular}
+%\end{center}
+%
+%\begin{ojo}[Símbolos que se cruzan]
+%En los apuntes $\tau$ es el \textbf{tiempo final}; en LeVeque $\tau^n$ es el \textbf{error de
+%truncamiento local}. LeVeque usa $\lambda$ como valor propio de $u' = \lambda u$, que en estos problemas
+%de decaimiento es $-\lambda$ (o $-\alpha_0$).
+%\end{ojo}

@@ -1,0 +1,229 @@
+\problema{9}{Método de las potencias: \texorpdfstring{$\keff$}{kef} y razón de dominancia}{10}
+
+\begin{enunciado}
+	Considere $-D\varphi'' + \Sigma_a\varphi = \dfrac1k\,\nu\Sigma_f\varphi$ con $\varphi = 0$ en la frontera,
+	$D/h^2 = 1$, $\Sigma_a = 1$, $\nu\Sigma_f = 2$ y tres nodos interiores. En forma matricial,
+	$\mat{A}\vect{\varphi} = \frac1k\mat{F}\vect{\varphi}$ con $\mat{A} = \tridiag(-1, 3, -1)$ y $\mat{F} = 2\mat{I}$.
+	\begin{enumerate}[label=(\alph*)]
+		\item Muestre que el problema equivale a $\mat{A}^{-1}\mat{F}\vect{\varphi} = k\vect{\varphi}$ y describa la
+		iteración de potencias
+		$\mat{A}\vect{\varphi}^{(n+1)} = \dfrac{1}{k^{(n)}}\mat{F}\vect{\varphi}^{(n)}$,\quad
+		$k^{(n+1)} = k^{(n)}\,\dfrac{\vect{1}^T\mat{F}\vect{\varphi}^{(n+1)}}{\vect{1}^T\mat{F}\vect{\varphi}^{(n)}}$.
+		\item Con $\vect{\varphi}^{(0)} = (1, 1, 1)^T$ y $k^{(0)} = 1$, calcule dos iteraciones
+		(use Cholesky o factorización triple).
+		\item Los valores propios de $\mat{A}$ son $\mu_j = 3 - 2\cos\frac{j\pi}{4}$. Calcule los tres valores
+		de $k_j$, $\keff$ y la razón de dominancia $\rho_D = k_2/k_1$.
+		\item Estime el número de iteraciones para reducir el error del modo subdominante en un factor $10^{-6}$.
+		\item Compare el error de $k^{(1)}$ y $k^{(2)}$ con el valor exacto y comente.
+	\end{enumerate}
+\end{enunciado}
+
+% ---------------------------------------------------------------------
+\subsubsection*{Solución}
+% ---------------------------------------------------------------------
+\[
+\mat{A} = \begin{pmatrix} 3 & -1 & 0\\ -1 & 3 & -1\\ 0 & -1 & 3 \end{pmatrix},
+\qquad
+\mat{F} = \begin{pmatrix} 2 & 0 & 0\\ 0 & 2 & 0\\ 0 & 0 & 2 \end{pmatrix}.
+\]
+
+% =====================================================================
+\inciso{a}{Forma \texorpdfstring{$\mat{A}^{-1}\mat{F}\vect{\varphi} = k\vect{\varphi}$}{A^-1 F phi = k phi} e iteración de potencias}
+% =====================================================================
+
+\paso{1}{Forma de valor propio}
+$\mat{A}$ es simétrica y sus valores propios $\mu_j = 3 - 2\cos\frac{j\pi}{4}$ cumplen
+$\mu_j \ge 3 - 2 = 1 > 0$, entonces es definida positiva y existe $\mat{A}^{-1}$.
+Multiplicando $\mat{A}\vect{\varphi} = \frac1k\mat{F}\vect{\varphi}$ por la izquierda por $k\,\mat{A}^{-1}$:
+\begin{align*}
+	k\,\mat{A}^{-1}\mat{A}\vect{\varphi} &= k\,\frac1k\,\mat{A}^{-1}\mat{F}\vect{\varphi}\\
+	k\,\vect{\varphi} &= \mat{A}^{-1}\mat{F}\vect{\varphi}
+\end{align*}
+\resultado{\mat{A}^{-1}\mat{F}\,\vect{\varphi} = k\,\vect{\varphi}}
+$k$ es valor propio de $\mat{A}^{-1}\mat{F}$ y $\keff$ es el más grande, $\keff = k_1$, que es el que encuentra
+el método de las potencias.
+
+\paso{2}{Iteración del flujo}
+Aplicar $\mat{A}^{-1}\mat{F}$ al iterado anterior y escalar con el último $k$:
+\[
+\vect{\varphi}^{(n+1)} = \frac{1}{k^{(n)}}\,\mat{A}^{-1}\mat{F}\vect{\varphi}^{(n)} .
+\]
+Multiplicando por $\mat{A}$ por la izquierda:
+\[
+\mat{A}\vect{\varphi}^{(n+1)} = \frac{1}{k^{(n)}}\,\mat{F}\vect{\varphi}^{(n)} .
+\]
+Como $\mat{A}$ no cambia, se factoriza una sola vez.
+
+\paso{3}{Actualización de $k$}
+Si $\vect{\varphi}^{(n)}$ ya fuera el vector propio con valor $k$, entonces
+$\mat{A}^{-1}\mat{F}\vect{\varphi}^{(n)} = k\vect{\varphi}^{(n)}$ y
+\[
+\vect{\varphi}^{(n+1)} = \frac{k}{k^{(n)}}\,\vect{\varphi}^{(n)} .
+\]
+Multiplicando por $\vect{1}^T\mat{F}$ por la izquierda y despejando $k$:
+\begin{align*}
+	\vect{1}^T\mat{F}\vect{\varphi}^{(n+1)} &= \frac{k}{k^{(n)}}\,\vect{1}^T\mat{F}\vect{\varphi}^{(n)}\\
+	k &= k^{(n)}\,\frac{\vect{1}^T\mat{F}\vect{\varphi}^{(n+1)}}{\vect{1}^T\mat{F}\vect{\varphi}^{(n)}}
+\end{align*}
+\resultado{k^{(n+1)} = k^{(n)}\,\frac{\vect{1}^T\mat{F}\vect{\varphi}^{(n+1)}}{\vect{1}^T\mat{F}\vect{\varphi}^{(n)}}}
+
+
+\inciso{b}{Dos iteraciones}
+
+\paso{1}{Factorización triple $\mat{A} = \mat{L}\mat{D}\mat{L}^T$}
+Para una tridiagonal simétrica con diagonal $a$ y fuera de la diagonal $b$:
+\[
+\mat{L} = \begin{pmatrix} 1 & 0 & 0\\ l_1 & 1 & 0\\ 0 & l_2 & 1 \end{pmatrix},\quad
+\mat{D} = \begin{pmatrix} d_1 & 0 & 0\\ 0 & d_2 & 0\\ 0 & 0 & d_3 \end{pmatrix}
+\]
+y multiplicando:
+\[
+\mat{L}\mat{D}\mat{L}^T = \begin{pmatrix} d_1 & l_1 d_1 & 0\\ l_1 d_1 & l_1^2 d_1 + d_2 & l_2 d_2\\
+	0 & l_2 d_2 & l_2^2 d_2 + d_3 \end{pmatrix}.
+\]
+Igualando con $\mat{A}$ ($a = 3$, $b = -1$):
+\begin{align*}
+	d_1 &= a = 3\\
+	l_1 &= \frac{b}{d_1} = -\frac13\\
+	d_2 &= a - l_1^2 d_1 = 3 - \frac19(3) = \frac83\\
+	l_2 &= \frac{b}{d_2} = -\frac38\\
+	d_3 &= a - l_2^2 d_2 = 3 - \frac{9}{64}\left(\frac83\right) = 3 - \frac38 = \frac{21}{8}
+\end{align*}
+\[
+\mat{L} = \begin{pmatrix} 1 & 0 & 0\\ -\frac13 & 1 & 0\\ 0 & -\frac38 & 1 \end{pmatrix},\qquad
+\mat{D} = \begin{pmatrix} 3 & 0 & 0\\ 0 & \frac83 & 0\\ 0 & 0 & \frac{21}{8} \end{pmatrix}.
+\]
+
+Resolver $\mat{L}\mat{D}\mat{L}^T\vect{\varphi} = \vect{q}$ con
+$\mat{L}\vect{y} = \vect{q}$ (adelante), $\mat{D}\vect{z} = \vect{y}$ y $\mat{L}^T\vect{\varphi} = \vect{z}$ (atra)
+\[
+y_1 = q_1,\quad y_2 = q_2 + \tfrac13 y_1,\quad y_3 = q_3 + \tfrac38 y_2;\qquad
+z_i = \frac{y_i}{d_i};\qquad
+\varphi_3 = z_3,\quad \varphi_2 = z_2 + \tfrac38\varphi_3,\quad \varphi_1 = z_1 + \tfrac13\varphi_2 .
+\]
+
+\paso{2}{Iteración 1 ($n = 0$)}
+Fuente:
+\[
+\vect{q}^{(0)} = \frac{1}{k^{(0)}}\mat{F}\vect{\varphi}^{(0)} = \frac11\,(2)(1, 1, 1)^T = (2, 2, 2)^T .
+\]
+Adelante:
+\[
+y_1 = 2,\qquad y_2 = 2 + \tfrac13(2) = \tfrac83,\qquad y_3 = 2 + \tfrac38\left(\tfrac83\right) = 3 .
+\]
+Diagonal:
+\[
+z_1 = \frac{2}{3},\qquad z_2 = \frac{8/3}{8/3} = 1,\qquad z_3 = \frac{3}{21/8} = \frac{8}{7} .
+\]
+Atrás:
+\[
+\varphi_3 = \tfrac87,\qquad
+\varphi_2 = 1 + \tfrac38\left(\tfrac87\right) = 1 + \tfrac37 = \tfrac{10}{7},\qquad
+\varphi_1 = \tfrac23 + \tfrac13\left(\tfrac{10}{7}\right) = \tfrac{14}{21} + \tfrac{10}{21} = \tfrac{8}{7} .
+\]
+\resultado{\vect{\varphi}^{(1)} = \left(\tfrac87,\ \tfrac{10}{7},\ \tfrac87\right)^T}
+
+Actualización de $k$:
+\[
+\vect{1}^T\mat{F}\vect{\varphi}^{(0)} = 2(1 + 1 + 1) = 6,\qquad
+\vect{1}^T\mat{F}\vect{\varphi}^{(1)} = 2\left(\tfrac{8 + 10 + 8}{7}\right) = \tfrac{52}{7}
+\]
+\[
+k^{(1)} = k^{(0)}\,\frac{\vect{1}^T\mat{F}\vect{\varphi}^{(1)}}{\vect{1}^T\mat{F}\vect{\varphi}^{(0)}}
+= 1\cdot\frac{52/7}{6} = \frac{52}{42} = \frac{26}{21}
+\]
+\resultado{k^{(1)} = \frac{26}{21} \approx 1.23810}
+
+\paso{3}{Iteración 2 ($n = 1$)}
+Fuente:
+\[
+\vect{q}^{(1)} = \frac{1}{k^{(1)}}\mat{F}\vect{\varphi}^{(1)}
+= \frac{21}{26}\,(2)\left(\tfrac87, \tfrac{10}{7}, \tfrac87\right)^T
+= \frac{21}{13}\left(\tfrac87, \tfrac{10}{7}, \tfrac87\right)^T
+= \left(\tfrac{24}{13},\ \tfrac{30}{13},\ \tfrac{24}{13}\right)^T .
+\]
+Adelante:
+\[
+y_1 = \tfrac{24}{13},\qquad
+y_2 = \tfrac{30}{13} + \tfrac13\left(\tfrac{24}{13}\right) = \tfrac{30}{13} + \tfrac{8}{13} = \tfrac{38}{13},\qquad
+y_3 = \tfrac{24}{13} + \tfrac38\left(\tfrac{38}{13}\right) = \tfrac{96}{52} + \tfrac{57}{52} = \tfrac{153}{52} .
+\]
+Diagonal:
+\[
+z_1 = \frac{24/13}{3} = \frac{8}{13},\qquad
+z_2 = \frac{38/13}{8/3} = \frac{114}{104} = \frac{57}{52},\qquad
+z_3 = \frac{153/52}{21/8} = \frac{153\cdot 8}{52\cdot 21} = \frac{1224}{1092} = \frac{102}{91} .
+\]
+Atrás:
+\begin{align*}
+	\varphi_3 &= \tfrac{102}{91}\\
+	\varphi_2 &= \tfrac{57}{52} + \tfrac38\left(\tfrac{102}{91}\right) = \tfrac{798}{728} + \tfrac{306}{728}
+	= \tfrac{1104}{728} = \tfrac{138}{91}\\
+	\varphi_1 &= \tfrac{8}{13} + \tfrac13\left(\tfrac{138}{91}\right) = \tfrac{56}{91} + \tfrac{46}{91} = \tfrac{102}{91}
+\end{align*}
+\resultado{\vect{\varphi}^{(2)} = \tfrac{1}{91}\left(102,\ 138,\ 102\right)^T \approx (1.12088,\ 1.51648,\ 1.12088)^T}
+
+
+Actualización de $k$:
+\[
+\vect{1}^T\mat{F}\vect{\varphi}^{(2)} = 2\left(\tfrac{102 + 138 + 102}{91}\right) = \tfrac{684}{91}
+\]
+\[
+k^{(2)} = k^{(1)}\,\frac{\vect{1}^T\mat{F}\vect{\varphi}^{(2)}}{\vect{1}^T\mat{F}\vect{\varphi}^{(1)}}
+= \frac{26}{21}\cdot\frac{684/91}{52/7} = \frac{26}{21}\cdot\frac{684\cdot 7}{91\cdot 52}
+= \frac{26\cdot 684\cdot 7}{21\cdot 91\cdot 52} = \frac{114}{91}
+\]
+\resultado{k^{(2)} = \frac{114}{91} \approx 1.25275}
+
+\begin{center}
+	\begin{tabular}{ccccc}\toprule
+		$n$ & $\varphi_1^{(n)}$ & $\varphi_2^{(n)}$ & $\varphi_3^{(n)}$ & $k^{(n)}$\\\midrule
+		0 & 1 & 1 & 1 & 1\\
+		1 & $8/7$ & $10/7$ & $8/7$ & $26/21 \approx 1.23810$\\
+		2 & $102/91$ & $138/91$ & $102/91$ & $114/91 \approx 1.25275$\\\bottomrule
+	\end{tabular}
+\end{center}
+
+
+\inciso{c}{Valores \texorpdfstring{$k_j$}{k_j}, \texorpdfstring{$\keff$}{kef} y \texorpdfstring{$\rho_D$}{rho_D}}
+
+
+\paso{1}{Relación entre $k_j$ y $\mu_j$}
+Si $\mat{A}\vect{v}_j = \mu_j\vect{v}_j$, entonces $\mat{A}^{-1}\vect{v}_j = \frac{1}{\mu_j}\vect{v}_j$ y como
+$\mat{F} = 2\mat{I}$:
+\[
+\mat{A}^{-1}\mat{F}\vect{v}_j = 2\mat{A}^{-1}\vect{v}_j = \frac{2}{\mu_j}\,\vect{v}_j ,
+\]
+entonces $\vect{v}_j$ también es vector propio de $\mat{A}^{-1}\mat{F}$, con valor propio
+\[
+k_j = \frac{2}{\mu_j} .
+\]
+El $\mu$ más chico da el $k$ mas grand
+
+\paso{2}{Valores propios de $\mat{A}$}
+\begin{align*}
+	\mu_1 &= 3 - 2\cos\tfrac{\pi}{4} = 3 - 2\left(\tfrac{\sqrt2}{2}\right) = 3 - \sqrt2 \approx 1.58579\\
+	\mu_2 &= 3 - 2\cos\tfrac{\pi}{2} = 3 - 0 = 3\\
+	\mu_3 &= 3 - 2\cos\tfrac{3\pi}{4} = 3 + \sqrt2 \approx 4.41421
+\end{align*}
+
+\paso{3}{Valores de $k_j$}
+\begin{align*}
+	k_1 &= \frac{2}{3 - \sqrt2} = \frac{2(3 + \sqrt2)}{(3 - \sqrt2)(3 + \sqrt2)} = \frac{2(3 + \sqrt2)}{9 - 2}
+	= \frac{6 + 2\sqrt2}{7} \approx 1.26120\\
+	k_2 &= \frac{2}{3} \approx 0.666667\\
+	k_3 &= \frac{2}{3 + \sqrt2} = \frac{2(3 - \sqrt2)}{9 - 2} = \frac{6 - 2\sqrt2}{7} \approx 0.453082
+\end{align*}
+\resultado{\keff = k_1 = \frac{6 + 2\sqrt2}{7} \approx 1.26120}
+
+\paso{4}{Razón de dominancia}
+\[
+\rho_D = \frac{k_2}{k_1} = \frac{2/\mu_2}{2/\mu_1} = \frac{\mu_1}{\mu_2} = \frac{3 - \sqrt2}{3}
+= 1 - \frac{\sqrt2}{3}
+\]
+\resultado{\rho_D = 1 - \frac{\sqrt2}{3} \approx 0.528595}
+
+\inciso{d}{Número de iteraciones}
+
+
+\inciso{e}{Error de \texorpdfstring{$k^{(1)}$}{k(1)} y \texorpdfstring{$k^{(2)}$}{k(2)}}

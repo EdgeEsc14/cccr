@@ -1,0 +1,240 @@
+\problema{8}{Difusión 2D transitoria y verificación del orden}{8}
+
+\begin{enunciado}
+	\begin{enumerate}[label=(\alph*)]
+		\item Para una malla $n\times n$, escriba la matriz 2D como
+		$\mat{A}_{2D} = \mat{I}\otimes\mat{A}_1 + \mat{A}_1\otimes\mat{I}$ y el esquema CN
+		\[
+		\Big(\mat{I} + \tfrac{v\Delta t}{2}\mat{A}_{2D}\Big)\vect{\varphi}^{k+1}
+		= \Big(\mat{I} - \tfrac{v\Delta t}{2}\mat{A}_{2D}\Big)\vect{\varphi}^{k} + v\Delta t\,\vect{S}.
+		\]
+		\item Demuestre que el lado izquierdo es simétrico definido positivo y explique por qué conviene
+		factorizarlo (Cholesky) una sola vez.
+		\item Los valores propios de $\mat{A}_{2D}$ (con $\Sigma_a = 0$) son
+		$\mu_{ij} = \dfrac{2D}{h^2}\left[2 - \cos\dfrac{i\pi}{n+1} - \cos\dfrac{j\pi}{n+1}\right]$.
+		Obtenga $\rho(\mat{A}_{2D})$ cuando $n\to\infty$ y la cota $v\Delta t \le h^2/(4D)$ para Euler explícito.
+		\item \textbf{Programa (Python/Octave).} Implemente CN en 1D con $L = 1$, $D = v = 1$,
+		$\Sigma_a = 0$, $h = 1/20$, $\varphi(x, 0) = \sin\pi x$. Compare en $T = 0.1$ con la solución
+		exacta del sistema semidiscreto, $\varphi_i(T) = e^{-\mu T}\sin(\pi x_i)$ con
+		$\mu = \frac{2}{h^2}(1 - \cos\pi h)$, para $\Delta t = 0.02, 0.01, 0.005, 0.0025$.
+		Muestre que el error decrece con orden 2 en $\Delta t$.
+	\end{enumerate}
+\end{enunciado}
+
+
+\subsubsection*{Solución}
+
+
+\inciso{a}{Matriz \texorpdfstring{$\mat{A}_{2D}$}{A2D} con producto de Kronecker y esquema CN}
+
+
+\paso{1}{Generación del mallado espacial}
+tomando como referencia la sesion 9, con un dominio cuadrado ($b - a = d - c$) e $I = J = n+1$ subintervalos:
+\[
+x_i = a + i\,h,\quad i = 0, 1, \dots, n+1, \qquad
+y_j = c + j\,h,\quad j = 0, 1, \dots, n+1, \qquad
+h = \frac{b - a}{n+1}.
+\]
+
+
+\paso{2}{Colocación de la EDP en el nodo \texorpdfstring{$(x_i, y_j)$}{(xi, yj)}}
+\[
+\frac1v\left.\frac{\partial\varphi}{\partial t}\right|_{(x_i, y_j, t)}
+= D\left[\left.\frac{\partial^2\varphi}{\partial x^2}\right|_{(x_i, y_j, t)}
++ \left.\frac{\partial^2\varphi}{\partial y^2}\right|_{(x_i, y_j, t)}\right]
+- \Sigma_a\,\varphi(x_i, y_j, t) + S(x_i, y_j),
+\qquad i, j = 1, \dots, n .
+\]
+
+\paso{3}{Cambio de las segundas derivadas por segundas diferencias divididas centradas}
+Como en el Problema 6
+\begin{align*}
+	\left.\frac{\partial^2\varphi}{\partial x^2}\right|_{(x_i, y_j, t)}
+	&= \frac{\varphi(x_{i-1}, y_j, t) - 2\varphi(x_i, y_j, t) + \varphi(x_{i+1}, y_j, t)}{h^2} + \Order{h^2},\\
+	\left.\frac{\partial^2\varphi}{\partial y^2}\right|_{(x_i, y_j, t)}
+	&= \frac{\varphi(x_i, y_{j-1}, t) - 2\varphi(x_i, y_j, t) + \varphi(x_i, y_{j+1}, t)}{h^2} + \Order{h^2}.
+\end{align*}
+Al quitar el $\Order{h^2}$ los valores exactos se vuelven aproximaciones
+$\varphi_{ij}(t) \approx \varphi(x_i, y_j, t)$, y $S_{ij} = S(x_i, y_j)$:
+\[
+\frac1v\frac{\dd\varphi_{ij}}{\dd t}
+= \frac{D}{h^2}\big[\varphi_{i-1,j} - 2\varphi_{ij} + \varphi_{i+1,j}\big]
++ \frac{D}{h^2}\big[\varphi_{i,j-1} - 2\varphi_{ij} + \varphi_{i,j+1}\big]
+- \Sigma_a\varphi_{ij} + S_{ij}.
+\]
+Se distribuye $D/h^2$ y se juntan los términos en $\varphi_{ij}$ 
+\begin{align*}
+	\frac1v\frac{\dd\varphi_{ij}}{\dd t}
+	&= \frac{D}{h^2}\varphi_{i,j-1} + \frac{D}{h^2}\varphi_{i-1,j} - \frac{4D}{h^2}\varphi_{ij} - \Sigma_a\varphi_{ij}
+	+ \frac{D}{h^2}\varphi_{i+1,j} + \frac{D}{h^2}\varphi_{i,j+1} + S_{ij}\\
+	&= -\left[-\frac{D}{h^2}\varphi_{i,j-1} - \frac{D}{h^2}\varphi_{i-1,j}
+	+ \left(\frac{4D}{h^2} + \Sigma_a\right)\varphi_{ij}
+	- \frac{D}{h^2}\varphi_{i+1,j} - \frac{D}{h^2}\varphi_{i,j+1}\right] + S_{ij},
+\end{align*}
+
+
+\paso{4}{Ordenamiento fila por fila y estructura por bloques}
+vamos a hacer un recorrido por las incognitas fila por fila, o sea  primero la fila $j = 1$ y $i = 1, \dots, n$, luego la fila $j = 2$,
+y así hasta $j = n$ HAciendo la similitud con dos ciclos for anidados
+
+y el vector de incógnitas, agrupado por filas, es
+\[
+\vect{\varphi} = \big[\vect{\Phi}_1^T, \vect{\Phi}_2^T, \dots, \vect{\Phi}_n^T\big]^T,
+\qquad
+\vect{\Phi}_j = \big[\varphi_{1j}, \varphi_{2j}, \dots, \varphi_{nj}\big]^T \quad (\text{fila } j).
+\]
+En la ecuación del nodo $(i, j)$ 
+
+ el nodo y sus vecinos $(i\pm1, j)$ están en la misma fila $\vect{\Phi}_j$, con coeficientes
+	$-\frac{D}{h^2},\ \frac{4D}{h^2} + \Sigma_a,\ -\frac{D}{h^2}$enonces queda un bloque tridiagonal
+
+los vecinos $(i, j\pm1)$ están en las filas $\vect{\Phi}_{j\pm1}$, en el mismo lugar $i$, con coeficiente
+	$-\frac{D}{h^2}$: dan un bloque diagonal
+	
+entonces queda algo de la forma
+\[
+\frac1v\frac{\dd\vect{\varphi}}{\dd t} = -\mat{A}_{2D}\vect{\varphi} + \vect{S},
+\qquad
+\mat{A}_{2D} =
+\begin{pmatrix}
+	\mat{A}_{11} & \mat{A}_{12} &              &              \\
+	\mat{A}_{21} & \mat{A}_{22} & \ddots       &              \\
+	& \ddots       & \ddots       & \mat{A}_{n-1,n}\\
+	&              & \mat{A}_{n,n-1} & \mat{A}_{nn}
+\end{pmatrix},
+\]
+con bloques de $n\times n$
+\[
+\mat{A}_{jj} = \tridiag\!\left(-\frac{D}{h^2},\ \frac{4D}{h^2} + \Sigma_a,\ -\frac{D}{h^2}\right),
+\qquad
+\mat{A}_{j,j\pm1} = -\frac{D}{h^2}\,\mat{I}_n .
+\]
+
+
+
+\paso{5}{Producto de Kronecker}
+Esto lo extraje de \textit{Matrix Computations 4th edition Gene H Golub,} solamente es teoria para saber como funciona el producto de Kronecker
+
+Para $\mat{X}$ y $\mat{Y}$ de $n\times n$, $\mat{X}\otimes\mat{Y}$ es la matriz de $n^2\times n^2$ cuyo
+bloque $(m, m')$ es $x_{mm'}\mat{Y}$:
+\[
+\mat{X}\otimes\mat{Y} =
+\begin{pmatrix}
+	x_{11}\mat{Y} & x_{12}\mat{Y} & \cdots & x_{1n}\mat{Y}\\
+	\vdots        &               &        & \vdots       \\
+	x_{n1}\mat{Y} & x_{n2}\mat{Y} & \cdots & x_{nn}\mat{Y}
+\end{pmatrix}.
+\]
+Por ejemplo, con $n = 2$:
+\[
+\mat{X}\otimes\mat{Y} =
+\begin{pmatrix} x_{11} & x_{12}\\ x_{21} & x_{22} \end{pmatrix}\otimes
+\begin{pmatrix} y_{11} & y_{12}\\ y_{21} & y_{22} \end{pmatrix}
+=
+\left(\begin{array}{cc|cc}
+	x_{11}y_{11} & x_{11}y_{12} & x_{12}y_{11} & x_{12}y_{12}\\
+	x_{11}y_{21} & x_{11}y_{22} & x_{12}y_{21} & x_{12}y_{22}\\ \hline
+	x_{21}y_{11} & x_{21}y_{12} & x_{22}y_{11} & x_{22}y_{12}\\
+	x_{21}y_{21} & x_{21}y_{22} & x_{22}y_{21} & x_{22}y_{22}
+\end{array}\right)
+=
+\left(\begin{array}{c|c}
+	x_{11}\mat{Y} & x_{12}\mat{Y}\\ \hline
+	x_{21}\mat{Y} & x_{22}\mat{Y}
+\end{array}\right).
+\]
+Igual para vectores: si $\vect{u}, \vect{w}\in\mathbb{R}^n$, $\vect{u}\otimes\vect{w}$ es el vector cuyo bloque
+$m$ es $u_m\vect{w}$. Se toma como matriz 1D la de $-D\,\dd^2/\dd x^2$ \textbf{sin} absorción:
+\[
+\mat{A}_1 = \frac{D}{h^2}\tridiag(-1, 2, -1)\qquad (n\times n).
+\]
+
+Como $\mat{I}_n$ es diagonal, $\mat{I}_n\otimes\mat{A}_1$ es bloque diagonal, y como $\mat{A}_1$ es
+tridiagonal, $\mat{A}_1\otimes\mat{I}_n$ es bloque tridiagonal ya que de acuerdo a Golub el producto de
+Kronecker hereda la estructura de banda a nivel de bloques 
+\[
+\mat{I}_n\otimes\mat{A}_1 =
+\begin{pmatrix}
+	\mat{A}_1 &        &           \\
+	& \ddots &           \\
+	&        & \mat{A}_1
+\end{pmatrix},
+\qquad
+\mat{A}_1\otimes\mat{I}_n = \frac{D}{h^2}
+\begin{pmatrix}
+	2\mat{I}_n & -\mat{I}_n &         &            \\
+	-\mat{I}_n  & 2\mat{I}_n & \ddots  &            \\
+	& \ddots     & \ddots  & -\mat{I}_n \\
+	&            & -\mat{I}_n & 2\mat{I}_n
+\end{pmatrix}.
+\]
+
+Sumando bloque a bloque:
+\begin{align*}
+	\text{bloque } (m, m):&\quad \mat{A}_1 + \frac{2D}{h^2}\mat{I}_n
+	= \frac{D}{h^2}\tridiag(-1, 2, -1) + \frac{D}{h^2}\tridiag(0, 2, 0)\\
+	&\quad= \frac{D}{h^2}\tridiag(-1, 4, -1)
+	= \tridiag\!\left(-\frac{D}{h^2},\ \frac{4D}{h^2},\ -\frac{D}{h^2}\right),\\
+	\text{bloque } (m, m\pm1):&\quad \mat{O} - \frac{D}{h^2}\mat{I}_n = -\frac{D}{h^2}\mat{I}_n .
+\end{align*}
+Comparando con el paso 4 ya ssolamente falta $\Sigma_a$ en la diagonal
+\resultado{\mat{A}_{2D} = \mat{I}_n\otimes\mat{A}_1 + \mat{A}_1\otimes\mat{I}_n + \Sigma_a\,\mat{I}_{n^2},
+	\qquad \mat{A}_1 = \frac{D}{h^2}\tridiag(-1, 2, -1)}
+
+Con $n = 3$ ($9$ incógnitas), factorizando $D/h^2$ y con $\Sigma_a = 0$:
+\[
+\mat{A}_1 = \frac{D}{h^2}\begin{pmatrix} 2 & -1 & 0\\ -1 & 2 & -1\\ 0 & -1 & 2\end{pmatrix},
+\qquad
+\mat{I}_3 = \begin{pmatrix} 1 & 0 & 0\\ 0 & 1 & 0\\ 0 & 0 & 1\end{pmatrix}.
+\]
+Entonces queda como:
+{\setlength{\arraycolsep}{3.5pt}
+	\[
+	\mat{I}_3\otimes\mat{A}_1 = \frac{D}{h^2}\left(
+	\begin{array}{ccc|ccc|ccc}
+		2 & -1 &  0 &  0 &  0 &  0 &  0 &  0 &  0\\
+		-1 &  2 & -1 &  0 &  0 &  0 &  0 &  0 &  0\\
+		0 & -1 &  2 &  0 &  0 &  0 &  0 &  0 &  0\\ \hline
+		0 &  0 &  0 &  2 & -1 &  0 &  0 &  0 &  0\\
+		0 &  0 &  0 & -1 &  2 & -1 &  0 &  0 &  0\\
+		0 &  0 &  0 &  0 & -1 &  2 &  0 &  0 &  0\\ \hline
+		0 &  0 &  0 &  0 &  0 &  0 &  2 & -1 &  0\\
+		0 &  0 &  0 &  0 &  0 &  0 & -1 &  2 & -1\\
+		0 &  0 &  0 &  0 &  0 &  0 &  0 & -1 &  2
+	\end{array}\right),
+	\]
+	\[
+	\mat{A}_1\otimes\mat{I}_3 = \frac{D}{h^2}\left(
+	\begin{array}{ccc|ccc|ccc}
+		2 &  0 &  0 & -1 &  0 &  0 &  0 &  0 &  0\\
+		0 &  2 &  0 &  0 & -1 &  0 &  0 &  0 &  0\\
+		0 &  0 &  2 &  0 &  0 & -1 &  0 &  0 &  0\\ \hline
+		-1 &  0 &  0 &  2 &  0 &  0 & -1 &  0 &  0\\
+		0 & -1 &  0 &  0 &  2 &  0 &  0 & -1 &  0\\
+		0 &  0 & -1 &  0 &  0 &  2 &  0 &  0 & -1\\ \hline
+		0 &  0 &  0 & -1 &  0 &  0 &  2 &  0 &  0\\
+		0 &  0 &  0 &  0 & -1 &  0 &  0 &  2 &  0\\
+		0 &  0 &  0 &  0 &  0 & -1 &  0 &  0 &  2
+	\end{array}\right).
+	\]}
+Sumando entrada por entrada 
+\[
+\mat{A}_{2D} = \mat{I}_3\otimes\mat{A}_1 + \mat{A}_1\otimes\mat{I}_3 = \frac{D}{h^2}\left(
+\begin{array}{ccc|ccc|ccc}
+	4 & -1 &  0 & -1 &  0 &  0 &  0 &  0 &  0\\
+	-1 &  4 & -1 &  0 & -1 &  0 &  0 &  0 &  0\\
+	0 & -1 &  4 &  0 &  0 & -1 &  0 &  0 &  0\\ \hline
+	-1 &  0 &  0 &  4 & -1 &  0 & -1 &  0 &  0\\
+	0 & -1 &  0 & -1 &  4 & -1 &  0 & -1 &  0\\
+	0 &  0 & -1 &  0 & -1 &  4 &  0 &  0 & -1\\ \hline
+	0 &  0 &  0 & -1 &  0 &  0 &  4 & -1 &  0\\
+	0 &  0 &  0 &  0 & -1 &  0 & -1 &  4 & -1\\
+	0 &  0 &  0 &  0 &  0 & -1 &  0 & -1 &  4
+\end{array}\right).
+\]
+
+
+\inciso{d}{Programa: CN en 1D y orden 2 en \texorpdfstring{$\Delta t$}{dt}}
+
+Código
+\lstinputlisting{../python/problemas/p8.py}

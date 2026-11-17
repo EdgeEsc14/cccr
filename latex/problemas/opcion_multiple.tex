@@ -1,0 +1,164 @@
+% Opción múltiple (0.75 pts c/u). La respuesta correcta va en negritas y en rojo.
+
+Marque una sola respuesta.
+
+\begin{enumerate}[label=\textbf{\arabic*.},leftmargin=*,itemsep=8pt]
+	
+	\item El error local de un método de un paso es:
+	\begin{enumerate}[label=\alph*)]
+		\item el error acumulado en todos los pasos hasta $T$
+		\item {\bfseries\boldmath\color{red} el error cometido en un paso suponiendo exacta la solución en el instante anterior}
+		\item el residuo al sustituir la solución numérica en la ecuación
+		\item el error de redondeo de la máquina
+	\end{enumerate}
+	
+	\item Si un método de un paso estable tiene error local $\Order{h^{p+1}}$, su error global en $T$ fijo es:
+	\begin{enumerate}[label=\alph*)]
+		\item $\Order{h^{p+1}}$ 
+		\item $\Order{h^{p+2}}$ 
+		\item {\bfseries\boldmath\color{red} $\Order{h^{p}}$} 
+		\item $\Order{h^{p-1}}$
+	\end{enumerate}
+	
+	\item Para $N' = -\lambda N$, el método de Crank--Nicolson tiene error local y global, respectivamente:
+	\begin{enumerate}[label=\alph*)]
+		\item $\Order{h^2}$ y $\Order{h}$ 
+		\item $\Order{h^2}$ y $\Order{h^2}$
+		\item $\Order{h^4}$ y $\Order{h^3}$ 
+		\item {\bfseries\boldmath\color{red} $\Order{h^3}$ y $\Order{h^2}$}
+	\end{enumerate}
+	
+	\item Euler explícito para $N' = -\lambda N$ ($\lambda > 0$) es absolutamente estable si:
+	\begin{enumerate}[label=\alph*)]
+		\item  $0 < \lambda h < 2$ {\bfseries\boldmath\color{red}
+		\item $0 < \lambda h < 1$} 
+		\item $0 < \lambda h < 4$ 
+		\item para todo $h > 0$
+	\end{enumerate}
+	
+	\item La aproximación $\dfrac{f(x+h) - 2f(x) + f(x-h)}{h^2}$ de $f''(x)$ tiene error de truncamiento:
+	\begin{enumerate}[label=\alph*)]
+		\item $\Order{h}$ \item $\Order{h^3}$ \item $\Order{h^4}$ \item {\bfseries\boldmath\color{red} $\Order{h^2}$}
+	\end{enumerate}
+	
+	\item El radio espectral de una matriz es:
+	\begin{enumerate}[label=\alph*)]
+		\item la suma de sus valores propios 
+		\item {\bfseries\boldmath\color{red} el máximo módulo de sus valores propios}
+		\item su determinante 
+		\item su norma de Frobenius
+	\end{enumerate}
+	
+	\item La rapidez de convergencia del método de las potencias está gobernada por:
+	\begin{enumerate}[label=\alph*)]
+		\item $|\lambda_1|/|\lambda_2|$ 
+		\item el número de condición de $\mat{A}$
+		\item {\bfseries\boldmath\color{red} $|\lambda_2|/|\lambda_1|$} 
+		\item la traza de $\mat{A}$
+	\end{enumerate}
+	
+	\item El método de Wielandt acelera la convergencia porque:
+	\begin{enumerate}[label=\alph*)]
+		\item {\bfseries\boldmath\color{red} reduce la razón de dominancia mediante un corrimiento $k_s$ cercano (y mayor) a $\keff$}
+		\item elimina la necesidad de resolver sistemas lineales
+		\item modifica el valor de $\keff$ del problema
+		\item solo es aplicable a matrices no simétricas
+	\end{enumerate}
+	
+	\item La condición $\varphi(a) = 0$ en una frontera es de tipo:
+	\begin{enumerate}[label=\alph*)]
+		\item Neumann 
+		\item Robin 
+		\item periódica 
+		\item {\bfseries\boldmath\color{red} Dirichlet}
+	\end{enumerate}
+	
+	\item La frontera reflejante (corriente neta nula, $-D\varphi' = 0$) corresponde a una condición:
+	\begin{enumerate}[label=\alph*)]
+		\item de Dirichlet homogénea 
+		\item {\bfseries\boldmath\color{red} de Neumann homogénea}
+		\item de Robin con $\gamma\to\infty$ 
+		\item ninguna de las anteriores
+	\end{enumerate}
+	
+	\item Una condición de Robin:
+	\begin{enumerate}[label=\alph*)]
+		\item fija solo el valor de $\varphi$ 
+		\item {\bfseries\boldmath\color{red}fija solo el valor de $\varphi'$}
+		\item impone una combinación lineal $\alpha\varphi + \beta\varphi' = g$ 
+		\item impone periodicidad
+	\end{enumerate}
+	
+	\item La factorización de Cholesky requiere que la matriz sea:
+	\begin{enumerate}[label=\alph*)]
+		\item {\bfseries\boldmath\color{red} simétrica y definida positiva} 
+		\item cualquier matriz no singular
+		\item triangular 
+		\item diagonal
+	\end{enumerate}
+	
+	\item El costo de la factorización triple de una matriz tridiagonal $n\times n$ es:
+	\begin{enumerate}[label=\alph*)]
+		\item $\Order{n^3}$ 
+		\item $\Order{n^2}$ 
+		\item $\Order{n\log n}$ 
+		\item {\bfseries\boldmath\color{red} $\Order{n}$}
+	\end{enumerate}
+	
+	\item Para $\lambda h \gg 1$, el factor de amplificación de CN tiende a:
+	\begin{enumerate}[label=\alph*)]
+		\item $0$ 
+		\item {\bfseries\boldmath\color{red} $-1$} 
+		\item $+1$ 
+		\item $\infty$
+	\end{enumerate}
+	
+	\item Euler explícito para $\vect{\varphi}' = -\mat{A}\vect{\varphi}$ ($\mat{A}$ simétrica definida positiva) es estable si:
+	\begin{enumerate}[label=\alph*)]
+		\item $\Delta t < 1/\rho(\mat{A})$ 
+		\item {\bfseries\boldmath\color{red}$\Delta t < \rho(\mat{A})$ }
+		\item $\Delta t < 2/\rho(\mat{A})$ 
+		\item $\Delta t < 4/\rho(\mat{A})$
+	\end{enumerate}
+	
+	\item El teorema de Lax--Richtmyer establece que para problemas lineales bien planteados:
+	\begin{enumerate}[label=\alph*)]
+		\item {\bfseries\boldmath\color{red} consistencia y estabilidad implican convergencia} 
+		\item estabilidad implica consistencia
+		\item consistencia implica estabilidad 
+		\item la convergencia no depende de la estabilidad
+	\end{enumerate}
+	
+	\item Con nodos fantasma y diferencias centrales, la condición $\varphi'(0) = 0$ conduce a:
+	\begin{enumerate}[label=\alph*)]
+		\item $\varphi_{-1} = 0$ 
+		\item $\varphi_{-1} = -\varphi_1$ 
+		\item $\varphi_{-1} = \varphi_0$ 
+		\item {\bfseries\boldmath\color{red} $\varphi_{-1} = \varphi_1$}
+	\end{enumerate}
+	
+	\item En una malla 2D con $n\times n$ nodos interiores y numeración lexicográfica, el semiancho de banda es:
+	\begin{enumerate}[label=\alph*)]
+		\item $1$ 
+		\item {\bfseries\boldmath\color{red} $n$} 
+		\item $n^2$ 
+		\item $2$
+	\end{enumerate}
+	
+	\item La iteración $\vect{x}^{(k+1)} = \mat{M}\vect{x}^{(k)} + \vect{c}$ converge para todo $\vect{x}^{(0)}$ si y solo si:
+	\begin{enumerate}[label=\alph*)]
+		\item $\det\mat{M} < 1$ 
+		\item $\rho(\mat{M}) > 1$ 
+		\item {\bfseries\boldmath\color{red} $\rho(\mat{M}) < 1$} \item $\mat{M}$ es simétrica
+	\end{enumerate}
+	
+	\item Si la razón de dominancia es cercana a 1:
+	\begin{enumerate}[label=\alph*)]
+		\item {\bfseries\boldmath\color{red} la convergencia del método de las potencias es lenta} 
+		\item la convergencia es más rápida
+		\item el método diverge 
+		
+		\item no tiene efecto
+	\end{enumerate}
+	
+\end{enumerate}

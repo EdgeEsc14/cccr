@@ -1,0 +1,78 @@
+% ---------------------------------------------------------------------
+%  Estructura: partes, problemas, incisos, pasos
+% ---------------------------------------------------------------------
+
+\makeatletter
+% \parte{I}{Decaimiento radiactivo}{20}
+% Cada parte y cada problema empiezan en hoja nueva; el primer problema de
+% una parte se queda en la misma hoja que el título de la parte.
+\newif\ifrecienparte
+\newcommand{\parte}[3]{%
+  \clearpage\phantomsection\global\recienpartetrue
+  \section*{Parte #1. #2 (#3 pts)}%
+  \addcontentsline{toc}{section}{Parte #1. #2}%
+  \markboth{Parte #1. #2}{Parte #1. #2}}
+
+% \problema{3}{Decaimiento con fuente}{6}
+% Se puede referir con  Problema~\ref{prob:3}
+\newcommand{\problema}[3]{%
+  \ifrecienparte\global\recienpartefalse\else\clearpage\fi
+  \phantomsection
+  \subsection*{Problema #1. #2\hfill[#3 pts]}%
+  \addcontentsline{toc}{subsection}{Problema #1. #2}%
+  \protected@edef\@currentlabel{#1}%
+  \label{prob:#1}}
+
+% \inciso{a}{Esquema CN con fuente}
+% Si el título lleva matemáticas, usa \texorpdfstring{$...$}{texto} para el índice del PDF.
+\newcommand{\inciso}[2]{%
+  \phantomsection
+  \subsubsection*{(#1) #2}%
+  \addcontentsline{toc}{subsubsection}{(#1) #2}}
+\makeatother
+
+% \paso{1}{Generación del mallado}
+\newcommand{\paso}[2]{\par\medskip\textbf{Paso #1.} \textit{#2}\par\smallskip}
+
+% ---------------------------------------------------------------------
+%  Notas dentro del texto (sin cajas)
+% ---------------------------------------------------------------------
+
+% Enunciado del problema
+\newenvironment{enunciado}{\par}{\par\medskip}
+
+% porque / ojo / leveque: la explicación va directo como párrafo normal, sin título.
+% (El título opcional, p. ej. \begin{porque}[...], se ignora.)
+\newenvironment{porque}[1][]{\par}{\par}
+\newenvironment{ojo}[1][]{\par}{\par}
+\newenvironment{leveque}[1][]{\par}{\par}
+
+% Resultado final destacado: \resultado{ ecuación }
+\newcommand{\resultado}[1]{\[\boxed{\displaystyle #1}\]}
+
+% Problema aún sin resolver
+\newcommand{\pendiente}{\par\textit{Solución pendiente.}\par}
+
+% ---------------------------------------------------------------------
+%  Material generado por Python (no rompe la compilación si falta)
+% ---------------------------------------------------------------------
+% \figurapython{p3_solucion}{Pie de figura}{fig:p3sol}{0.8}
+\newcommand{\figurapython}[4]{%
+  \begin{figure}[htbp]\centering
+  \IfFileExists{figuras/#1.pdf}{%
+    \includegraphics[width=#4\textwidth]{figuras/#1.pdf}}{%
+    \fbox{\parbox{0.7\textwidth}{\centering\small
+      Falta \texttt{figuras/#1.pdf}.\\ Ejecuta \texttt{make figs} en la raíz.}}}
+  \caption{#2}\label{#3}
+  \end{figure}}
+
+% \tablapython{p3_d}  — inserta latex/tablas/p3_d.tex
+\newcommand{\tablapython}[1]{%
+  \IfFileExists{tablas/#1.tex}{\input{tablas/#1.tex}}{%
+    \fbox{\small Falta \texttt{tablas/#1.tex}: ejecuta \texttt{make figs}.}}}
+
+% Respuesta de opción múltiple / conceptual: \respuesta{b) porque ...}
+% Si se deja vacía, \respuesta{} imprime una línea en blanco.
+\newcommand{\respuesta}[1]{%
+  \par\smallskip\textbf{Respuesta:}~%
+  \if\relax\detokenize{#1}\relax\rule{3cm}{0.4pt}\else #1\fi\par}

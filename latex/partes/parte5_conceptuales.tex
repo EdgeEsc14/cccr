@@ -1,0 +1,81 @@
+
+\newpage
+\subsection*{C1. Errores y teorema de Lax--Richtmyer\hfill[2 pts]}
+\addcontentsline{toc}{subsection}{C1. Errores y Lax--Richtmyer}
+Distinga error de truncamiento, error local y error global. Enuncie la relación entre
+consistencia, estabilidad y convergencia (Lax--Richtmyer).
+\respuesta{%
+	Se tienen 3 errores 
+	
+	\textbf{Error de truncamiento.} Es el residuo que queda al sustituir la solución exacta en la ecuación en diferencias y esta nos ayuda a medir qué tan bien la discretizacion representa a la ecuación diferencial
+	
+	\textbf{Error local.} Es el error que se comete en un solo paso partiendo del valor exacto
+	
+	\textbf{Error global.} Es la diferencia entre la solución exacta y la numérica en un nodo tiene la acumulacion de los errores locales 
+	
+	\textbf{Consistencia, estabilidad y convergencia.} El teorema de equivalencia de
+	Lax--Richtmyer establece que, para un problema de valor inicial lineal bien planteado y un esquema
+	consistente, el esquema es convergente si y solo si es estable:
+	\[
+	\text{consistencia} + \text{estabilidad} \iff \text{convergencia}
+	\]
+}
+
+\subsection*{C2. Del error local al error global\hfill[2 pts]}
+\addcontentsline{toc}{subsection}{C2. Del error local al global}
+Explique por qué un método de un paso con error local $\Order{h^{p+1}}$ tiene error global
+$\Order{h^p}$ y qué papel juega la estabilidad.
+\respuesta{%
+	El error global es la suma de errores locales. Para llegar a un tiempo final $T$ se dan
+	$N = T/h$ pasos, entonces
+	\[
+	E_N \approx N\cdot\Order{h^{p+1}} = \frac{T}{h}\,\Order{h^{p+1}} = \Order{h^{p}},
+	\]
+	y por eso pierde una potencia de $h$
+}
+
+\subsection*{C3. Radio espectral y razón de dominancia\hfill[2 pts]}
+\addcontentsline{toc}{subsection}{C3. Radio espectral y razón de dominancia}
+Defina el radio espectral y la razón de dominancia. Cómo determinan la rapidez de convergencia
+del método de las potencias y de una iteración $\vect{x}^{(n+1)} = \mat{M}\vect{x}^{(n)} + \vect{c}$?
+Qué consecuencia tiene un $\rho_D$ cercano a 1 en un núcleo grande y débilmente acoplado?
+\respuesta{%
+	\textbf{Radio espectral.} Es el mayor de los valores propios de la matriz de iteración
+	
+	\textbf{Razón de dominancia.} Es el cociente entre el segundo valor propio y el dominante:
+	\[
+	\rho_D=\frac{k_{\mathrm{eff},2}}{k_{\mathrm{eff},1}}<1 .
+	\]
+	
+	
+	La consecuencia de Si $rho_D$ esta cerca de 1 es que el método de las potencias converge muy lento
+
+}
+
+\subsection*{C4. Condiciones de frontera en difusión neutrónica\hfill[2 pts]}
+\addcontentsline{toc}{subsection}{C4. Condiciones de frontera}
+Interprete físicamente las condiciones de Dirichlet, Neumann y Robin en difusión neutrónica
+(vacío extrapolado, frontera reflejante, albedo) y describa su efecto en la matriz del sistema.
+\respuesta{%
+	\textbf{Dirichlet.} Representa una frontera con vacio aqui lo tomamos como el flujo cero en la frontera	extrapolada en la matriz el nodo de frontera no es incognita
+	
+	
+	\textbf{Neumann.} Representa una frontera reflejante o un plano de corriente igual a cero el nodo de frontera si es incognita y aquie lo tenemos que ressolver mediante nodo fantasma
+	
+	\textbf{Robin.} Relaciona el flujo con la corriente el nodo de frontera es incognita y la	condición agrega un termino a la diagonal
+}
+
+\subsection*{C5. Esquemas para difusión transitoria\hfill[2 pts]}
+\addcontentsline{toc}{subsection}{C5. Esquemas para difusión transitoria}
+Compare Euler explícito, Euler implícito y CN para difusión transitoria en cuanto a estabilidad,
+orden y oscilaciones espurias. Por qué se factoriza una sola vez la matriz si $\Delta t$ es constante?
+\respuesta{%
+	con $r=D\,\Delta t/h^{2}$:
+	
+	\textbf{Euler explícito.} Orden $\Order{\Delta t + h^{2}}$ hay que
+	usar pasos pequeños
+	
+	\textbf{Euler implícito.} Orden $\Order{\Delta t + h^{2}}$. Es estable y no oscila
+	
+	\textbf{Crank--Nicolson.} Orden $\Order{\Delta t^{2} + h^{2}}$ y estable puede dar oscilaciones
+}

@@ -1,0 +1,41 @@
+% =====================================================================
+%  PLANTILLA DE PROBLEMA
+%  1. Copia este archivo:  problemas/pN.tex
+%  2. Agrégalo con \input{problemas/pN} en el archivo
+%     de su parte (partes/parteX_...tex).
+%  3. (Opcional) Crea python/problemas/pN.py para sus
+%     figuras y tablas; se guardan en figuras/ y tablas/ con prefijo pN_.
+% =====================================================================
+\problema{NN}{Título del problema}{0}
+
+\begin{enunciado}
+Texto del enunciado.
+\begin{enumerate}[label=(\alph*)]
+  \item Primer inciso.
+  \item Segundo inciso.
+\end{enumerate}
+\end{enunciado}
+
+\paragraph{Referencias en los apuntes.} Sesión XX (...).
+
+\inciso{a}{Título corto del inciso}
+
+\paso{1}{Generación del mallado}
+Desarrollo.
+
+\begin{porque}
+Explicación de por qué se hace este paso.
+\end{porque}
+
+\resultado{u_{\ell+1} = \dots}
+
+\begin{ojo}
+Error común o detalle que confunde.
+\end{ojo}
+
+\inciso{b}{Título corto del inciso}
+Desarrollo.
+
+% Material generado por Python:
+% \tablapython{pN_tabla}
+% \figurapython{pN_figura}{Pie de figura.}{fig:pN}{0.75}

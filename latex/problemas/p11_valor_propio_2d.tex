@@ -1,0 +1,413 @@
+\problema{11}{Valor propio en 2D}{4}
+
+\begin{enunciado}
+	Para la malla del Problema~\ref{prob:6} sea $\mat{A}\vect{\varphi} = \frac1k\mat{F}\vect{\varphi}$ con $\mat{A}$
+	del Problema~\ref{prob:6} y $\mat{F} = 3\mat{I}$.
+	\begin{enumerate}[label=(\alph*)]
+		\item Obtenga los valores propios de $\mat{A}$, los de $k$, $\keff$ y $\rho_D$.
+		\item Realice una iteración de potencias desde $\vect{\varphi}^{(0)} = (1, 0, 0, 0)^T$, $k^{(0)} = 1$.
+		\item Afecta a la convergencia que el segundo valor propio tenga multiplicidad 2? Explique.
+	\end{enumerate}
+\end{enunciado}
+
+Del Problema~\ref{prob:6}:
+\[
+\mat{A} =
+\begin{pmatrix}
+	4 & -1 & -1 &  0\\
+	-1 &  4 &  0 & -1\\
+	-1 &  0 &  4 & -1\\
+	0 & -1 & -1 &  4
+\end{pmatrix}
+= \begin{pmatrix} \mat{T} & -\mat{I}\\ -\mat{I} & \mat{T} \end{pmatrix},
+\qquad \mat{T} = \begin{pmatrix} 4 & -1\\ -1 & 4 \end{pmatrix},
+\qquad \mat{F} = 3\mat{I} .
+\]
+
+% =====================================================================
+\inciso{a}{Valores propios de \texorpdfstring{$\mat{A}$}{A}, de \texorpdfstring{$k$}{k}, \texorpdfstring{$\keff$}{kef} y \texorpdfstring{$\rho_D$}{rhoD}}
+% =====================================================================
+
+\paso{1}{Reducir el problema}
+Se sustituye $\mat{F} = 3\mat{I}$:
+\[
+\mat{A}\vect{\varphi} = \frac1k\,(3\mat{I})\,\vect{\varphi} = \frac3k\,(\mat{I}\vect{\varphi}) .
+\]
+Como $\mat{I}\vect{\varphi} = \vect{\varphi}$ (a identidad no cambia al vector
+\[
+3\mat{I}\vect{\varphi} =
+\begin{pmatrix} 3 & 0 & 0 & 0\\ 0 & 3 & 0 & 0\\ 0 & 0 & 3 & 0\\ 0 & 0 & 0 & 3 \end{pmatrix}
+\begin{pmatrix} \varphi_1\\ \varphi_2\\ \varphi_3\\ \varphi_4 \end{pmatrix}
+= \begin{pmatrix} 3\varphi_1\\ 3\varphi_2\\ 3\varphi_3\\ 3\varphi_4 \end{pmatrix} = 3\vect{\varphi}
+\qquad\Longrightarrow\qquad
+\mat{A}\vect{\varphi} = \frac3k\,\vect{\varphi} .
+\]
+Esta es la definición de valor propio de $\mat{A}$: si $\mat{A}\vect{\varphi} = \mu\,\vect{\varphi}$, entonces
+\[
+\mu = \frac3k \qquad\Longrightarrow\qquad k = \frac{3}{\mu},
+\]
+y los vectores propios son los mismos que los de $\mat{A}$.
+
+multiplicando por $\mat{A}^{-1}$ por la izquierda:
+\[
+\vect{\varphi} = \frac1k\,\mat{A}^{-1}\mat{F}\vect{\varphi}
+\qquad\Longrightarrow\qquad
+\underbrace{\mat{A}^{-1}\mat{F}}_{\mat{M}}\,\vect{\varphi} = k\,\vect{\varphi},
+\qquad \mat{M} = 3\mat{A}^{-1} .
+\]
+Si $\mat{A}\vect{\varphi} = \mu\vect{\varphi}$, al multiplicar por $\mat{A}^{-1}$ queda $\vect{\varphi} = \mu\,\mat{A}^{-1}\vect{\varphi}$, o sea
+$\mat{A}^{-1}\vect{\varphi} = \frac1\mu\vect{\varphi}$, y entonces
+\[
+\mat{M}\vect{\varphi} = 3\mat{A}^{-1}\vect{\varphi} = \frac3\mu\,\vect{\varphi} .
+\]
+Los valores propios de $\mat{M}$ son $k = 3/\mu$. Basta encontrar los valores propios de $\mat{A}$.
+
+\paso{2}{Condición para los valores propios}
+$\mat{A}\vect{\varphi} = \mu\vect{\varphi}$ con $\vect{\varphi} \neq \vect{0}$. Pasando todo a un lado y usando
+$\mu\vect{\varphi} = \mu\mat{I}\vect{\varphi}$:
+\[
+(\mat{A} - \mu\mat{I})\,\vect{\varphi} = \vect{0} .
+\]
+Si $\det(\mat{A} - \mu\mat{I}) \neq 0$ la única solución es $\vect{\varphi} = \vect{0}$ (no sirve). Para tener
+$\vect{\varphi} \neq \vect{0}$ se necesita
+\[
+\det(\mat{A} - \mu\mat{I}) = 0 .
+\]
+
+\paso{3}{Escribir $\mat{A} - \mu\mat{I}$ por bloques}
+cambia la diagonal. Con $a = 4 - \mu$:
+\[
+\mat{A} - \mu\mat{I} =
+\left(\begin{array}{cc|cc}
+	a & -1 & -1 &  0\\
+	-1 &  a &  0 & -1\\ \hline
+	-1 &  0 &  a & -1\\
+	0 & -1 & -1 &  a
+\end{array}\right)
+= \begin{pmatrix} \mat{T} - \mu\mat{I} & -\mat{I}\\ -\mat{I} & \mat{T} - \mu\mat{I} \end{pmatrix},
+\qquad
+\mat{T} - \mu\mat{I} = \begin{pmatrix} a & -1\\ -1 & a \end{pmatrix}.
+\]
+
+\paso{4}{Determinante por bloques}
+Para una matriz de $2\times2$: $\det\begin{pmatrix} a & b\\ c & d \end{pmatrix} = ad - bc$. 
+\[
+\det(\mat{A} - \mu\mat{I})
+= \det\big[(\mat{T} - \mu\mat{I})(\mat{T} - \mu\mat{I}) - (-\mat{I})(-\mat{I})\big]
+= \det\big[(\mat{T} - \mu\mat{I})^2 - \mat{I}\big].
+\]
+Se eleva al cuadrado (renglón por columna):
+\[
+(\mat{T} - \mu\mat{I})^2 =
+\begin{pmatrix} a & -1\\ -1 & a \end{pmatrix}
+\begin{pmatrix} a & -1\\ -1 & a \end{pmatrix}
+= \begin{pmatrix} a^2 + 1 & -a - a\\ -a - a & 1 + a^2 \end{pmatrix}
+= \begin{pmatrix} a^2 + 1 & -2a\\ -2a & a^2 + 1 \end{pmatrix}.
+\]
+Se resta $\mat{I}$:
+\[
+(\mat{T} - \mu\mat{I})^2 - \mat{I} = \begin{pmatrix} a^2 & -2a\\ -2a & a^2 \end{pmatrix}.
+\]
+Su determinante:
+\[
+\det(\mat{A} - \mu\mat{I}) = a^2\cdot a^2 - (-2a)(-2a) = a^4 - 4a^2 = a^2\left(a^2 - 4\right) = a^2\,(a - 2)(a + 2).
+\]
+
+\paso{5}{Igualar a cero}
+\[
+a^2\,(a - 2)(a + 2) = 0, \qquad a = 4 - \mu \ \Longrightarrow\ \mu = 4 - a .
+\]
+\begin{center}
+	\begin{tabular}{|c|c|c|}
+		\hline
+		Factor & $a$ & $\mu = 4 - a$\\
+		\hline
+		$a^2 = 0$ & $0$ & $4$ \\
+		$a - 2 = 0$ & $2$ & $2$\\
+		$a + 2 = 0$ & $-2$ & $6$\\
+		\hline
+	\end{tabular}
+\end{center}
+\resultado{\mu_1 = 2, \qquad \mu_2 = \mu_3 = 4, \qquad \mu_4 = 6}
+
+\paso{6}{Vectores propios}
+%Por la simetría del cuadrado se proponen y se comprueba $\mat{A}\vect{\varphi} = \mu\vect{\varphi}$:
+%\begin{align*}
+%	\mat{A}\begin{pmatrix} 1\\ 1\\ 1\\ 1 \end{pmatrix}
+%	&= \begin{pmatrix} 4 - 1 - 1 + 0\\ -1 + 4 + 0 - 1\\ -1 + 0 + 4 - 1\\ 0 - 1 - 1 + 4 \end{pmatrix}
+%	= \begin{pmatrix} 2\\ 2\\ 2\\ 2 \end{pmatrix} = 2\begin{pmatrix} 1\\ 1\\ 1\\ 1 \end{pmatrix},
+%	&
+%	\mat{A}\begin{pmatrix} 1\\ -1\\ 1\\ -1 \end{pmatrix}
+%	&= \begin{pmatrix} 4 + 1 - 1 + 0\\ -1 - 4 + 0 + 1\\ -1 + 0 + 4 + 1\\ 0 + 1 - 1 - 4 \end{pmatrix}
+%	= 4\begin{pmatrix} 1\\ -1\\ 1\\ -1 \end{pmatrix},\\[6pt]
+%	\mat{A}\begin{pmatrix} 1\\ 1\\ -1\\ -1 \end{pmatrix}
+%	&= \begin{pmatrix} 4 - 1 + 1 + 0\\ -1 + 4 + 0 + 1\\ -1 + 0 - 4 + 1\\ 0 - 1 + 1 - 4 \end{pmatrix}
+%	= 4\begin{pmatrix} 1\\ 1\\ -1\\ -1 \end{pmatrix},
+%	&
+%	\mat{A}\begin{pmatrix} 1\\ -1\\ -1\\ 1 \end{pmatrix}
+%	&= \begin{pmatrix} 4 + 1 + 1 + 0\\ -1 - 4 + 0 - 1\\ -1 + 0 - 4 - 1\\ 0 + 1 + 1 + 4 \end{pmatrix}
+%	= 6\begin{pmatrix} 1\\ -1\\ -1\\ 1 \end{pmatrix}.
+%\end{align*}
+%
+%\begin{center}
+%	\begin{tikzpicture}[scale=0.8]
+%		\foreach \ox/\s/\lab in {0/{+,+,+,+}/{$\mu = 2$},
+%			3.5/{+,-,+,-}/{$\mu = 4$},
+%			7/{+,+,-,-}/{$\mu = 4$},
+%			10.5/{+,-,-,+}/{$\mu = 6$}} {
+%			\draw (\ox,0) rectangle (\ox+3,3);
+%			\foreach \sg [count=\c] in \s {
+%				\pgfmathsetmacro{\px}{\ox + 1 + mod(\c-1,2)}
+%				\pgfmathsetmacro{\py}{1 + int((\c-1)/2)}
+%				\node[circle, draw, minimum size=6mm, inner sep=0pt] at (\px,\py) {$\sg$};
+%			}
+%			\node[below] at (\ox+1.5,0) {\lab};
+%		}
+%	\end{tikzpicture}
+%\end{center}
+%Los dos modos con $\mu = 4$ son el mismo patrón girado $90^\circ$: uno cambia de signo en $x$ y el otro
+%en $y$. Como el cuadrado es simétrico, tienen el mismo valor propio; por eso $\mu = 4$ tiene
+%multiplicidad 2.
+
+Valores de $k$ y $\keff$
+
+Con $k_i = 3/\mu_i$:
+\begin{center}
+	\begin{tabular}{|c|c|c|c|}
+		\hline
+		Modo & Vector propio & $\mu_i$ & $k_i = 3/\mu_i$\\
+		\hline
+		1 & $(1, 1, 1, 1)^T$   & 2 & $3/2 $\\
+		2 & $(1, -1, 1, -1)^T$ & 4 & $3/4 $\\
+		3 & $(1, 1, -1, -1)^T$ & 4 & $3/4 $\\
+		4 & $(1, -1, -1, 1)^T$ & 6 & $3/6 $\\
+		\hline
+	\end{tabular}
+\end{center}
+Aqui es curioso que el orden se invierte, el valor propio mas chico de $\mat{A}$ da el $k$ más grande
+
+\resultado{\keff = k_1 = \frac{3}{\mu_{\min}} = \frac32 }
+Corresponde al modo con todos los nodos positivos (Perron--Frobenius) $\keff$ es real, positivo
+
+\paso{8}{Razón de dominancia}
+\[
+\rho_D = \frac{k_2}{k_1} = \frac{\frac34}{\frac32} = \frac{\mu_1}{\mu_2} = \frac24 = \frac12
+\]
+
+% =====================================================================
+\inciso{b}{Una iteración de potencias}
+% =====================================================================
+
+\[
+\vect{q}^{(n)} = \frac{1}{k^{(n-1)}}\,\mat{F}\vect{\varphi}^{(n-1)},
+\qquad
+\mat{A}\vect{\varphi}^{(n)} = \vect{q}^{(n)},
+\qquad
+k^{(n)} = k^{(n-1)}\,\frac{\vect{1}^T\mat{F}\vect{\varphi}^{(n)}}{\vect{1}^T\mat{F}\vect{\varphi}^{(n-1)}},
+\]
+y al final se normaliza $\vect{\varphi}^{(n)}$ (dividiendo entre su máximo).
+
+Datos: $\vect{\varphi}^{(0)} = (1, 0, 0, 0)^T$, $k^{(0)} = 1$, $\mat{F} = 3\mat{I}$.
+
+\paso{1}{}
+\[
+\vect{q}^{(1)} = \frac{1}{k^{(0)}}\,\mat{F}\vect{\varphi}^{(0)} = \frac11\cdot 3\begin{pmatrix} 1\\ 0\\ 0\\ 0 \end{pmatrix}
+= \begin{pmatrix} 3\\ 0\\ 0\\ 0 \end{pmatrix}.
+\]
+
+\paso{2}{Resolver $\mat{A}\vect{\varphi}^{(1)} = \vect{q}^{(1)}$ con el factor $\mat{G}$ del Problema~\ref{prob:6}}
+\[
+\mat{A}\vect{\varphi}^{(1)} = \vect{q}^{(1)}
+\;\Longrightarrow\;
+\mat{G}\underbrace{\mat{G}^T\vect{\varphi}^{(1)}}_{\vect{y}} = \vect{q}^{(1)}
+\;\Longrightarrow\;
+\begin{cases}
+	\mat{G}\vect{y} = \vect{q}^{(1)} & \text{(sustitución hacia adelante)}\\
+	\mat{G}^T\vect{\varphi}^{(1)} = \vect{y} & \text{(sustitución hacia atrás)}
+\end{cases}
+\]
+con
+\[
+g_{11} = 2,\quad g_{21} = g_{31} = -\tfrac12,\quad g_{41} = 0,\quad g_{22} = \tfrac{\sqrt{15}}{2},\quad
+g_{32} = -\tfrac{1}{2\sqrt{15}},\quad g_{42} = -\tfrac{2}{\sqrt{15}},
+\]
+\[
+g_{33} = \sqrt{\tfrac{56}{15}},\quad g_{43} = -\tfrac{8}{\sqrt{210}},\quad g_{44} = \sqrt{\tfrac{24}{7}} .
+\]
+
+\textbf{Hacia adelante.} El sistema $\mat{G}\vect{y} = \vect{q}^{(1)}$ es
+\[
+\begin{pmatrix}
+	g_{11} & 0 & 0 & 0\\
+	g_{21} & g_{22} & 0 & 0\\
+	g_{31} & g_{32} & g_{33} & 0\\
+	g_{41} & g_{42} & g_{43} & g_{44}
+\end{pmatrix}
+\begin{pmatrix} y_1\\ y_2\\ y_3\\ y_4 \end{pmatrix}
+=
+\begin{pmatrix} 3\\ 0\\ 0\\ 0 \end{pmatrix}
+\quad\Longrightarrow\quad
+\begin{aligned}
+	g_{11}y_1 &= 3\\
+	g_{21}y_1 + g_{22}y_2 &= 0\\
+	g_{31}y_1 + g_{32}y_2 + g_{33}y_3 &= 0\\
+	g_{41}y_1 + g_{42}y_2 + g_{43}y_3 + g_{44}y_4 &= 0
+\end{aligned}
+\]
+Se despeja de arriba hacia abajo:
+\begin{align*}
+	y_1 &= \frac{3}{g_{11}} = \frac32\\[8pt]
+	y_2 &= \frac{0 - g_{21}y_1}{g_{22}}
+	= \frac{0 - \left(-\tfrac12\right)\left(\tfrac32\right)}{\tfrac{\sqrt{15}}{2}}
+	= \frac{\tfrac34}{\tfrac{\sqrt{15}}{2}} = \frac{3}{2\sqrt{15}} = \frac{\sqrt{15}}{10}\\[8pt]
+	y_3 &= \frac{0 - g_{31}y_1 - g_{32}y_2}{g_{33}}
+	= \frac{0 - \left(-\tfrac12\right)\left(\tfrac32\right) - \left(-\tfrac{1}{2\sqrt{15}}\right)\left(\tfrac{\sqrt{15}}{10}\right)}{\sqrt{\tfrac{56}{15}}}
+	= \frac{\tfrac34 + \tfrac{1}{20}}{\sqrt{\tfrac{56}{15}}}
+	= \frac{\tfrac45}{\sqrt{\tfrac{56}{15}}} = \frac{\sqrt{210}}{35}\\[8pt]
+	y_4 &= \frac{0 - g_{41}y_1 - g_{42}y_2 - g_{43}y_3}{g_{44}}
+	= \frac{0 - 0 - \left(-\tfrac{2}{\sqrt{15}}\right)\left(\tfrac{\sqrt{15}}{10}\right) - \left(-\tfrac{8}{\sqrt{210}}\right)\left(\tfrac{\sqrt{210}}{35}\right)}{\sqrt{\tfrac{24}{7}}}
+	= \frac{\tfrac15 + \tfrac{8}{35}}{\sqrt{\tfrac{24}{7}}}
+	= \frac{\tfrac37}{\sqrt{\tfrac{24}{7}}} = \frac{\sqrt{42}}{28}
+\end{align*}
+
+\textbf{Hacia atrás.} El sistema $\mat{G}^T\vect{\varphi}^{(1)} = \vect{y}$ es
+\[
+\begin{pmatrix}
+	g_{11} & g_{21} & g_{31} & g_{41}\\
+	0 & g_{22} & g_{32} & g_{42}\\
+	0 & 0 & g_{33} & g_{43}\\
+	0 & 0 & 0 & g_{44}
+\end{pmatrix}
+\begin{pmatrix} \varphi_1^{(1)}\\ \varphi_2^{(1)}\\ \varphi_3^{(1)}\\ \varphi_4^{(1)} \end{pmatrix}
+=
+\begin{pmatrix} y_1\\ y_2\\ y_3\\ y_4 \end{pmatrix}
+\quad\Longrightarrow\quad
+\begin{aligned}
+	g_{11}\varphi_1^{(1)} + g_{21}\varphi_2^{(1)} + g_{31}\varphi_3^{(1)} + g_{41}\varphi_4^{(1)} &= y_1\\
+	g_{22}\varphi_2^{(1)} + g_{32}\varphi_3^{(1)} + g_{42}\varphi_4^{(1)} &= y_2\\
+	g_{33}\varphi_3^{(1)} + g_{43}\varphi_4^{(1)} &= y_3\\
+	g_{44}\varphi_4^{(1)} &= y_4
+\end{aligned}
+\]
+Se despeja de abajo hacia arriba:
+\begin{align*}
+	\varphi_4^{(1)} &= \frac{y_4}{g_{44}} = \frac{\tfrac{\sqrt{42}}{28}}{\sqrt{\tfrac{24}{7}}}
+	= \frac{1}{28}\sqrt{\frac{42\cdot 7}{24}} = \frac{1}{28}\sqrt{\frac{49}{4}} = \frac{1}{28}\cdot\frac72 = \frac18\\[8pt]
+	\varphi_3^{(1)} &= \frac{y_3 - g_{43}\varphi_4^{(1)}}{g_{33}}
+	= \frac{\tfrac{\sqrt{210}}{35} - \left(-\tfrac{8}{\sqrt{210}}\right)\left(\tfrac18\right)}{\sqrt{\tfrac{56}{15}}}
+	= \frac{\tfrac{\sqrt{210}}{35} + \tfrac{\sqrt{210}}{210}}{\sqrt{\tfrac{56}{15}}}
+	= \frac{\tfrac{\sqrt{210}}{30}}{\sqrt{\tfrac{56}{15}}} = \frac{1}{30}\sqrt{\frac{210\cdot15}{56}} = \frac{1}{30}\cdot\frac{15}{2} = \frac14\\[8pt]
+	\varphi_2^{(1)} &= \frac{y_2 - g_{32}\varphi_3^{(1)} - g_{42}\varphi_4^{(1)}}{g_{22}}
+	= \frac{\tfrac{\sqrt{15}}{10} - \left(-\tfrac{1}{2\sqrt{15}}\right)\left(\tfrac14\right) - \left(-\tfrac{2}{\sqrt{15}}\right)\left(\tfrac18\right)}{\tfrac{\sqrt{15}}{2}}
+	= \frac{\tfrac{12}{8\sqrt{15}} + \tfrac{1}{8\sqrt{15}} + \tfrac{2}{8\sqrt{15}}}{\tfrac{\sqrt{15}}{2}}
+	= \frac{\tfrac{15}{8\sqrt{15}}}{\tfrac{\sqrt{15}}{2}} = \frac14\\[8pt]
+	\varphi_1^{(1)} &= \frac{y_1 - g_{21}\varphi_2^{(1)} - g_{31}\varphi_3^{(1)} - g_{41}\varphi_4^{(1)}}{g_{11}}
+	= \frac{\tfrac32 - \left(-\tfrac12\right)\left(\tfrac14\right) - \left(-\tfrac12\right)\left(\tfrac14\right) - 0}{2}
+	= \frac{\tfrac32 + \tfrac18 + \tfrac18}{2} = \frac{\tfrac74}{2} = \frac78
+\end{align*}
+(En $\varphi_2^{(1)}$ se usó $\tfrac{\sqrt{15}}{10} = \tfrac{15}{10\sqrt{15}} = \tfrac{12}{8\sqrt{15}}$.)
+\[
+\vect{\varphi}^{(1)} = \left(\tfrac78,\ \tfrac14,\ \tfrac14,\ \tfrac18\right)^T
+\]
+
+\paso{3}{ $k$}
+\begin{align*}
+	\vect{1}^T\mat{F}\vect{\varphi}^{(0)} &= 3\,(1 + 0 + 0 + 0) = 3\\
+	\vect{1}^T\mat{F}\vect{\varphi}^{(1)} &= 3\left(\tfrac78 + \tfrac14 + \tfrac14 + \tfrac18\right) = 3\left(\tfrac{12}{8}\right) = \tfrac92
+\end{align*}
+\[
+k^{(1)} = k^{(0)}\,\frac{\vect{1}^T\mat{F}\vect{\varphi}^{(1)}}{\vect{1}^T\mat{F}\vect{\varphi}^{(0)}}
+= 1\cdot\frac{9/2}{3} = \frac32 .
+\]
+
+\paso{4}{Criterio de convergencia}
+\[
+\frac{\left|k^{(1)} - k^{(0)}\right|}{k^{(1)}} = \frac{\left|\frac32 - 1\right|}{\frac32} = 0.333333 > 10^{-5},
+\]
+no ha convergido
+
+% =====================================================================
+\inciso{c}{Afecta la multiplicidad 2 a la convergencia?}
+% =====================================================================
+%
+%\paso{1}{Expandir $\vect{\varphi}^{(0)}$ en los vectores propios}
+%Se busca $\vect{\varphi}^{(0)} = c_1\vect{\varphi}_1 + c_2\vect{\varphi}_2 + c_3\vect{\varphi}_3 + c_4\vect{\varphi}_4$.
+%Como $\mat{A}$ es simétrica, sus vectores propios son ortogonales, y cada coeficiente es
+%\[
+%c_i = \frac{\vect{\varphi}_i^T\vect{\varphi}^{(0)}}{\vect{\varphi}_i^T\vect{\varphi}_i} .
+%\]
+%Con $\vect{\varphi}^{(0)} = (1, 0, 0, 0)^T$, el numerador es la primera componente de cada vector ($= 1$) y
+%el denominador es $1 + 1 + 1 + 1 = 4$:
+%\[
+%c_1 = c_2 = c_3 = c_4 = \frac14
+%\qquad\Longrightarrow\qquad
+%\begin{pmatrix} 1\\ 0\\ 0\\ 0 \end{pmatrix}
+%= \frac14\left[\begin{pmatrix} 1\\ 1\\ 1\\ 1 \end{pmatrix} + \begin{pmatrix} 1\\ -1\\ 1\\ -1 \end{pmatrix}
+%+ \begin{pmatrix} 1\\ 1\\ -1\\ -1 \end{pmatrix} + \begin{pmatrix} 1\\ -1\\ -1\\ 1 \end{pmatrix}\right]
+%= \frac14\begin{pmatrix} 4\\ 0\\ 0\\ 0 \end{pmatrix}.
+%\]
+%
+%\paso{2}{Aplicar $\mat{M}$ $n$ veces}
+%Como $\mat{M}\vect{\varphi}_i = k_i\vect{\varphi}_i$, aplicar $\mat{M}$ $n$ veces multiplica cada modo por $k_i^n$:
+%\[
+%\mat{M}^n\vect{\varphi}^{(0)} = \frac14\left[k_1^n\vect{\varphi}_1 + k_2^n\vect{\varphi}_2 + k_3^n\vect{\varphi}_3 + k_4^n\vect{\varphi}_4\right].
+%\]
+%Se factoriza $k_1^n$ y se usa $k_2 = k_3$:
+%\[
+%\mat{M}^n\vect{\varphi}^{(0)} = \frac{k_1^n}{4}\left[\vect{\varphi}_1
+%+ \left(\frac{k_2}{k_1}\right)^n\big(\vect{\varphi}_2 + \vect{\varphi}_3\big)
+%+ \left(\frac{k_4}{k_1}\right)^n\vect{\varphi}_4\right]
+%= \frac{k_1^n}{4}\left[\vect{\varphi}_1 + (0.5)^n\,\vect{w} + \left(\tfrac13\right)^n\vect{\varphi}_4\right],
+%\]
+%con
+%\[
+%\vect{w} = \vect{\varphi}_2 + \vect{\varphi}_3 = (1, -1, 1, -1)^T + (1, 1, -1, -1)^T = (2, 0, 0, -2)^T .
+%\]
+%Comprobación con el inciso (b) ($n = 1$, $k^{(0)} = 1$, así que $\vect{\varphi}^{(1)} = \mat{M}\vect{\varphi}^{(0)}$):
+%\[
+%\frac{1.5}{4}\left[\begin{pmatrix} 1\\ 1\\ 1\\ 1 \end{pmatrix} + \frac12\begin{pmatrix} 2\\ 0\\ 0\\ -2 \end{pmatrix}
+%+ \frac13\begin{pmatrix} 1\\ -1\\ -1\\ 1 \end{pmatrix}\right]
+%= \frac38\begin{pmatrix} 7/3\\ 2/3\\ 2/3\\ 1/3 \end{pmatrix}
+%= \begin{pmatrix} 7/8\\ 1/4\\ 1/4\\ 1/8 \end{pmatrix},
+%\]
+%igual que en (b).
+%
+%\paso{3}{Conclusión}
+%Los dos modos con $k_2 = k_3 = 0.75$ se multiplican por el \emph{mismo} factor $(k_2/k_1)^n = (0.5)^n$, así que
+%su suma se comporta como un solo vector $\vect{w}$ (que también es vector propio con $k = 0.75$). Para el
+%método es como si hubiera un solo segundo modo, y el error decae como
+%\[
+%\varepsilon^{(n)} \sim C\,\rho_D^{\,n} = C\,(0.5)^n,
+%\]
+%igual que si $k_2$ fuera simple. Solo puede cambiar la constante $C$ (hay dos componentes), no la rapidez.
+%
+%Iterando (flujo normalizado entre su máximo, error $\varepsilon^{(n)} = \max_i\big|\varphi_i^{(n)} - 1\big|$):
+%\begin{center}
+%	\begin{tabular}{|c|c|c|c|c|}
+%		\hline
+%		$n$ & $k^{(n)}$ & $\vect{\varphi}^{(n)}$ & $\varepsilon^{(n)}$ & $\varepsilon^{(n)}/\varepsilon^{(n-1)}$\\
+%		\hline
+%		1  & 1.50000 & $(1,\ 0.285714,\ 0.285714,\ 0.142857)$ & 0.857143   & ---\\
+%		2  & 1.50000 & $(1,\ 0.551724,\ 0.551724,\ 0.379310)$ & 0.620690   & 0.724138\\
+%		3  & 1.50000 & $(1,\ 0.748201,\ 0.748201,\ 0.611511)$ & 0.388489   & 0.625899\\
+%		4  & 1.50000 & $(1,\ 0.868385,\ 0.868385,\ 0.780190)$ & 0.219810   & 0.565807\\
+%		5  & 1.50000 & $(1,\ 0.933687,\ 0.933687,\ 0.882807)$ & 0.117193   & 0.533156\\
+%		6  & 1.50000 & $(1,\ 0.967080,\ 0.967080,\ 0.939474)$ & 0.0605256  & 0.516460\\
+%		7  & 1.50000 & $(1,\ 0.983722,\ 0.983722,\ 0.969245)$ & 0.0307554  & 0.508139\\
+%		8  & 1.50000 & $(1,\ 0.991947,\ 0.991947,\ 0.984498)$ & 0.0155015  & 0.504027\\
+%		9  & 1.50000 & $(1,\ 0.996008,\ 0.996008,\ 0.992218)$ & 0.00778171 & 0.501996\\
+%		10 & 1.50000 & $(1,\ 0.998017,\ 0.998017,\ 0.996101)$ & 0.00389857 & 0.500992\\
+%		\hline
+%	\end{tabular}
+%\end{center}
+%El cociente tiende a $\rho_D = 0.5$. Al principio es mayor porque todavía pesa el modo con
+%$k_4/k_1 = \tfrac13$ y la normalización entre el máximo.
+%
+%\paso{4}{Cuándo sí importaría la multiplicidad}
+%\begin{itemize}
+%	\item Si el valor propio repetido fuera el dominante ($k_1$): no habría un modo fundamental único, el
+%	método convergería a una combinación que depende de $\vect{\varphi}^{(0)}$ y $\rho_D = 1$. Aquí no
+%	pasa porque $\keff$ es simple (Perron--Frobenius).
+%	\item Si la matriz no fuera diagonalizable: el error decaería como $n\,\rho_D^{\,n}$, más lento. Aquí no
+%	pasa porque $\mat{A}$ es simétrica y siempre tiene una base completa de vectores propios.
+%\end{itemize}

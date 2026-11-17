@@ -1,0 +1,212 @@
+% !TeX root = ../main.tex
+\problema{3}{Decaimiento con fuente}{6}
+
+\begin{enunciado}
+	Sea $N' = -\lambda N + S$, con $\lambda = 2$, $S = 4$ (constante), $N_0 = 0$.
+	\begin{enumerate}[label=(\alph*)]
+		\item Escriba el esquema CN con fuente (promedio de $S$ en $t_n$ y $t_{n+1}$).
+		\item Con $h = \frac14$ calcule $N_1$ y $N_2$ y compare con
+		$N(t) = \frac{S}{\lambda}\left(1 - e^{-\lambda t}\right)$.
+		\item Muestre que $N^* = S/\lambda$ es punto fijo de CN y de Euler implícito.
+		\item Calcule el error global en $T = 1$ para $h = \frac12, \frac14, \frac18$ y estime el orden observado.
+	\end{enumerate}
+\end{enunciado}
+
+% ---------------------------------------------------------------------
+\subsubsection*{Solución}
+% ---------------------------------------------------------------------
+\[
+\ddt{N} = \underbrace{-\lambda\,N(t)}_{\text{pérdida}} + \underbrace{S}_{\text{producción}},
+\qquad t \in [0, T], \qquad N(0) = N_0 = 0,
+\]
+con solución exacta
+\[
+N(t) = \frac{S}{\lambda}\left(1 - e^{-\lambda t}\right) = 2\left(1 - e^{-2t}\right).
+\]
+
+% =====================================================================
+\inciso{a}{Esquema CN con fuente}
+% =====================================================================
+
+\paso{1}{Generación del mallado}
+Se divide el intervalo de tiempo $[0, T]$ en pedazos iguales de tamaño $h$:
+\[
+t_n = n h, \qquad n = 0, 1, 2, \dots
+\]
+
+$N(t_n)$ es el valor exacto en el nodo y $N_n$ es la aproximación.
+
+\paso{2}{Colocación de la EDO en $t_{\nmed}$}
+$t_{\nmed} = t_n + h/2$:
+\[
+\left.\ddt{N}\right|_{t_{\nmed}} = -\lambda\, N(t_{\nmed}) + S .
+\]
+
+\paso{3}{Sustituir la derivada por la primera diferencia dividida centrada}
+se usa Taylor alrededor de $t_{\nmed}$
+\[
+\left.\ddt{N}\right|_{t_{\nmed}} = \frac{N(t_{n+1}) - N(t_n)}{h} + \Order{h^2}.
+\]
+El valor en el punto medio, se aproxima con el promedio de los dos nodos de alado
+\[
+N(t_{\nmed}) = \frac{N(t_n) + N(t_{n+1})}{2} + \Order{h^2},
+\]
+y la fuente es constante, así que su promedio es ella misma:
+\[
+\frac{S + S}{2} = S = 4 .
+\]
+Reescribiendo:
+\[
+\frac{N(t_{n+1}) - N(t_n)}{h} = -\lambda\,\frac{N(t_n) + N(t_{n+1})}{2} + S + \Order{h^2}.
+\]
+El $+\Order{h^2}$ es la suma de los errorcitos.
+Hacer la aproximacion
+\[
+\frac{N_{n+1} - N_n}{h} = -\lambda\,\frac{N_n + N_{n+1}}{2} + S .
+\]
+parte algebraica
+\begin{align*}
+	N_{n+1} - N_n &= -\frac{\lambda h}{2}\,N_n - \frac{\lambda h}{2}\,N_{n+1} + hS\\
+	N_{n+1} + \frac{\lambda h}{2}\,N_{n+1} &= N_n - \frac{\lambda h}{2}\,N_n + hS\\
+	N_{n+1}\left(1 + \frac{\lambda h}{2}\right) &= N_n\left(1 - \frac{\lambda h}{2}\right) + hS
+\end{align*}
+\resultado{N_{n+1} = \underbrace{\left(\frac{1 - \frac{\lambda h}{2}}{1 + \frac{\lambda h}{2}}\right)}_{R}N_n
+	+ \frac{hS}{1 + \frac{\lambda h}{2}}}
+
+% =====================================================================
+\inciso{b}{\texorpdfstring{$h = \tfrac14$}{h = 1/4}}
+% =====================================================================
+Con $\lambda = 2$, $S = 4$ y $h = \frac14$:
+\[
+\frac{\lambda h}{2} = \frac{2\cdot\frac14}{2} = \frac14, \qquad
+R = \frac{1 - \frac14}{1 + \frac14} = \frac{3/4}{5/4} = \frac35, \qquad
+\frac{hS}{1 + \frac14} = \frac{1}{5/4} = \frac45 .
+\]
+$N_{n+1} = \frac35\,N_n + \frac45$. inicia con $N_0 = 0$:
+\begin{align*}
+	n = 0:&\quad N_1 = \tfrac35(0) + \tfrac45 = \tfrac45 = 0.8\\
+	n = 1:&\quad N_2 = \tfrac35\left(\tfrac45\right) + \tfrac45 = \tfrac{12}{25} + \tfrac{20}{25} = \tfrac{32}{25} = 1.28
+\end{align*}
+La solución exacta: con $t_0 = 0$ y paso $h = \frac14$, $t_1 = 0.25$ y $t_2 = 0.5$:
+\begin{align*}
+	N(0.25) &= 2\left(1 - e^{-1/2}\right) \approx 0.786939\\
+	N(0.5)  &= 2\left(1 - e^{-1}\right) \approx 1.264241
+\end{align*}
+Comparacion
+\begin{center}
+	\begin{tabular}{cccc}\toprule
+		$n$ & CN & exacta & $|N(t_n) - N_n|$\\\midrule
+		1 & 0.8  & 0.786939 & 0.013061\\
+		2 & 1.28 & 1.264241 & 0.015759\\\bottomrule
+	\end{tabular}
+\end{center}
+
+CN sobreestima un poco. Pero notamos que el Error$_{N_2}$ $>$ Error$_{N_1}$ porque $N_2$
+arrastra el error de $N_1$ mas el error de el.
+
+Se graficaron todos los valores con Python para ver su comportamiento
+
+\begin{center}
+	\tablapython{p3_b_todos}
+\end{center}
+
+\figurapython{p3_solucion}{Solución exacta, Crank--Nicolson y Euler implícito
+	tienden al punto fijo}{fig:p3sol}{0.75}
+
+
+\inciso{c}{\texorpdfstring{$N^* = S/\lambda$}{N* = S/lambda} es punto fijo de CN y de Euler implícito}
+
+$N^*$ es \textbf{punto fijo} del esquema si, cuando $N_n = N^*$, el esquema devuelve $N_{n+1} = N^*$
+La ecuación exacta tiene equilibrio en $N^* = S/\lambda = 4/2 = 2$.
+
+\textbf{Crank--Nicolson.} Si $N_n = S/\lambda$:
+\begin{align*}
+	N_{n+1}\left(1 + \frac{\lambda h}{2}\right) &= \frac{S}{\lambda}\left(1 - \frac{\lambda h}{2}\right) + hS\\
+	&= \frac{S}{\lambda} - \frac{hS}{2} + hS\\
+	&= \frac{S}{\lambda} + \frac{hS}{2}\\
+	&= \frac{S}{\lambda}\left(1 + \frac{\lambda h}{2}\right)\\
+	N_{n+1} &= \frac{S}{\lambda}
+\end{align*}
+
+\textbf{Euler implícito.} Se construye con la misma receta, colocando la EDO en $t_{n+1}$ y se usa la primera
+diferencia dividida regresiva:
+\begin{align*}
+	\frac{N_{n+1} - N_n}{h} &= -\lambda N_{n+1} + S\\
+	N_{n+1} - N_n &= -\lambda h\,N_{n+1} + hS\\
+	N_{n+1}\left(1 + \lambda h\right) &= N_n + hS
+\end{align*}
+Con $N_n = S/\lambda$:
+\begin{align*}
+	N_{n+1}\left(1 + \lambda h\right) &= \frac{S}{\lambda} + hS\\
+	&= \frac{S}{\lambda}\left(1 + \lambda h\right)\\
+	N_{n+1} &= \frac{S}{\lambda}
+\end{align*}
+\resultado{N^* = \frac{S}{\lambda} = 2 \text{ es punto fijo de CN y de Euler implícito}}
+
+
+\inciso{d}{Error global en \texorpdfstring{$T = 1$}{T = 1} y orden observado}
+
+Del inciso (a), con $\lambda = 2$ y $S = 4$:
+\[
+N_{n+1} = R\,N_n + c, \qquad
+R = \frac{1 - \frac{\lambda h}{2}}{1 + \frac{\lambda h}{2}} = \frac{1 - h}{1 + h}, \qquad
+c = \frac{hS}{1 + \frac{\lambda h}{2}} = \frac{4h}{1 + h}
+\]
+Solución exacta en $T = 1$ y error global:
+\[
+N(1) = 2\left(1 - e^{-2}\right) \qquad E(h) = \left|N_{T/h} - N(1)\right|
+\]
+
+$h = \tfrac12$, $n = 2$ 
+\begin{align*}
+	R &= \frac{1 - \frac12}{1 + \frac12} = \frac{\frac12}{\frac32} = \frac13\\
+	c &= \frac{4\cdot\frac12}{1 + \frac12} = \frac{2}{\frac32} = \frac43\\
+	N_1 &= \tfrac13(0) + \tfrac43 = \tfrac43 \\
+	N_2 &= \tfrac13\left(\tfrac43\right) + \tfrac43 = \tfrac49 + \tfrac{12}{9} = \tfrac{16}{9} \\
+	E &= \tfrac{16}{9} - 1.729329 \approx 4.844834\times10^{-2}
+\end{align*}
+
+$h = \tfrac14$, $n = 4$ 
+\begin{align*}
+	R &= \frac{1 - \frac14}{1 + \frac14} = \frac{\frac34}{\frac54} = \frac35\\
+	c &= \frac{4\cdot\frac14}{1 + \frac14} = \frac{1}{\frac54} = \frac45\\
+	N_1 &= \tfrac35(0) + \tfrac45 = 0.8\\
+	N_2 &= \tfrac35(0.8) + 0.8 = 1.28\\
+	N_3 &= \tfrac35(1.28) + 0.8 = 1.568\\
+	N_4 &= \tfrac35(1.568) + 0.8 = 1.7408\\
+	E &= 1.740800 - 1.729329 \approx 1.147057\times10^{-2}
+\end{align*}
+
+$h = \tfrac18$, $n = 8$
+\begin{align*}
+	R &= \frac{1 - \frac18}{1 + \frac18} = \frac{\frac78}{\frac98} = \frac79\\
+	c &= \frac{4\cdot\frac18}{1 + \frac18} = \frac{\frac12}{\frac98} = \frac49\\
+	N_1 &= \tfrac79(0) + \tfrac49 \approx 0.444444\\
+	N_2 &= \tfrac79(0.444444) + \tfrac49 \approx 0.790123\\
+	N_3 &= \tfrac79(0.790123) + \tfrac49 \approx 1.058985\\
+	N_4 &= \tfrac79(1.058985) + \tfrac49 \approx 1.268099\\
+	N_5 &= \tfrac79(1.268099) + \tfrac49 \approx 1.430744\\
+	N_6 &= \tfrac79(1.430744) + \tfrac49 \approx 1.557245\\
+	N_7 &= \tfrac79(1.557245) + \tfrac49 \approx 1.655635\\
+	N_8 &= \tfrac79(1.655635) + \tfrac49 \approx 1.732161\\
+	E &= 1.732161 - 1.729329 \approx 2.831304\times10^{-3}
+\end{align*}
+
+\textbf{Orden}
+\[
+p_{\mathrm{glob}} = \frac{\ln\!\left(\dfrac{E(2h)}{E(h)}\right)}{\ln 2}, \qquad \ln 2 
+\]
+\begin{align*}
+	h = \tfrac14:&\quad \frac{E(2h)}{E(h)} = \frac{4.844834\times10^{-2}}{1.147057\times10^{-2}} = 4.223710\\
+	&\quad p_{\mathrm{glob}} = \frac{\ln(4.223710)}{\ln 2} = \frac{1.440714}{0.693147} = 2.078511\\[6pt]
+	h = \tfrac18:&\quad \frac{E(2h)}{E(h)} = \frac{1.147057\times10^{-2}}{2.831304\times10^{-3}} = 4.051337\\
+	&\quad p_{\mathrm{glob}} = \frac{\ln(4.051337)}{\ln 2} = \frac{1.399047}{0.693147} = 2.018398
+\end{align*}
+\begin{center}
+	\begin{tabular}{ccccc}\toprule
+		$h$ & $N_{T/h}$ & $E(h)$ & $E(2h)/E(h)$ & $p_{\mathrm{glob}}$\\\midrule
+		1/2 & 1.777778 & $4.844834\times10^{-2}$ & ---      & ---      \\
+		1/4 & 1.740800 & $1.147057\times10^{-2}$ & 4.223710 & 2.078511 \\
+		1/8 & 1.732161 & $2.831304\times10^{-3}$ & 4.051337 & 2.018398 \\\bottomrule
+	\end{tabular}
+\end{center}

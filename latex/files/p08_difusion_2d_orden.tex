@@ -1,0 +1,644 @@
+\problema{8}{Difusión 2D transitoria y verificación del orden}{8}
+
+\begin{enunciado}
+\begin{enumerate}[label=(\alph*)]
+  \item Para una malla $n\times n$, escriba la matriz 2D como
+        $\mat{A}_{2D} = \mat{I}\otimes\mat{A}_1 + \mat{A}_1\otimes\mat{I}$ y el esquema CN
+        \[
+          \Big(\mat{I} + \tfrac{v\Delta t}{2}\mat{A}_{2D}\Big)\vect{\varphi}^{k+1}
+          = \Big(\mat{I} - \tfrac{v\Delta t}{2}\mat{A}_{2D}\Big)\vect{\varphi}^{k} + v\Delta t\,\vect{S}.
+        \]
+  \item Demuestre que el lado izquierdo es simétrico definido positivo y explique por qué conviene
+        factorizarlo (Cholesky) una sola vez.
+  \item Los valores propios de $\mat{A}_{2D}$ (con $\Sigma_a = 0$) son
+        $\mu_{ij} = \dfrac{2D}{h^2}\left[2 - \cos\dfrac{i\pi}{n+1} - \cos\dfrac{j\pi}{n+1}\right]$.
+        Obtenga $\rho(\mat{A}_{2D})$ cuando $n\to\infty$ y la cota $v\Delta t \le h^2/(4D)$ para Euler explícito.
+  \item \textbf{Programa (Python/Octave).} Implemente CN en 1D con $L = 1$, $D = v = 1$,
+        $\Sigma_a = 0$, $h = 1/20$, $\varphi(x, 0) = \sin\pi x$. Compare en $T = 0.1$ con la solución
+        exacta del sistema semidiscreto, $\varphi_i(T) = e^{-\mu T}\sin(\pi x_i)$ con
+        $\mu = \frac{2}{h^2}(1 - \cos\pi h)$, para $\Delta t = 0.02, 0.01, 0.005, 0.0025$.
+        Muestre que el error decrece con orden 2 en $\Delta t$.
+\end{enumerate}
+\end{enunciado}
+
+\paragraph{Referencias en los apuntes.} Sesión 02 (segunda diferencia dividida centrada, error,
+rapidez y orden de convergencia), Sesión 006 (cuarto paso: casos FE, BE y CN en forma matricial),
+Sesión 007 (programa PPDE), Sesión 009 (malla 2D, ordenamiento fila por fila, matrices bloque
+$\mat{A}_{mm}$ y $\mat{A}_{m,m\pm1}$), Sesión 08 (radio espectral y $\vect{\varepsilon}^{(k)} = \mat{M}^k\vect{\varepsilon}^{(0)}$),
+Resumen a mano (difusión de neutrones y Cholesky $\mat{A} = \mat{G}\mat{G}^T$).
+
+% ---------------------------------------------------------------------
+\subsubsection*{Solución}
+% ---------------------------------------------------------------------
+Se conservan $\varphi$, $D$, $\Sigma_a$, $S$ y $v$ (como en el Resumen a mano, difusión de neutrones)
+y se usa la notación de las sesiones para la malla y el tiempo:
+\begin{center}
+\begin{tabular}{|c|c|c|c|c|c|}
+	\hline
+	Enunciado & $k$ (tiempo) & $n$ & $L$ (longitud) & $T$ & --- \\
+	\hline
+	Apuntes   & $\ell$ & $I-1 = J-1$ & $b-a = d-c$ & $\tau$ & $L = \tau/\Delta t$ (número de pasos) \\
+	\hline
+\end{tabular}
+\end{center}
+En el inciso (c) el enunciado llama $i, j$ a los índices de los \emph{modos}; aquí los llamo $p, q$ para no
+confundirlos con los índices $i, j$ de los \emph{nodos}.
+
+La ecuación de difusión transitoria con fuente es
+\[
+  \frac1v\frac{\partial\varphi}{\partial t}
+  = D\left(\frac{\partial^2\varphi}{\partial x^2} + \frac{\partial^2\varphi}{\partial y^2}\right)
+  - \Sigma_a\varphi + S,
+  \qquad (x, y)\in[a, b]\times[c, d],\quad t\in[0, \tau],
+\]
+con $\varphi(x, y, 0) = \varphi_0(x, y)$ y $\varphi = 0$ en las cuatro caras (Dirichlet homogénea, como en
+los Problemas~\ref{prob:6} y~\ref{prob:7}; es la condición que hace válidos los valores propios del inciso (c)).
+Multiplicando por $v$ queda la ecuación de calor de la Sesión 006,
+$\partial_t u = \alpha_0 u_{xx} - \beta_0 u + q_0$, con
+\[
+  \alpha_0 = vD, \qquad \beta_0 = v\Sigma_a, \qquad q_0 = vS ,
+\]
+así que la matriz $\mat{A}$ del programa PPDE es $v\,\mat{A}_{2D}$ y su vector $\vect{Q}$ es $v\vect{S}$.
+
+% =====================================================================
+\inciso{a}{Matriz \texorpdfstring{$\mat{A}_{2D}$}{A2D} con producto de Kronecker y esquema CN}
+% =====================================================================
+
+\paso{1}{Generación del mallado espacial}
+Como en la Sesión 009, con un dominio cuadrado ($b - a = d - c$) e $I = J = n+1$ subintervalos:
+\[
+  x_i = a + i\,\Delta x,\quad i = 0, 1, \dots, n+1, \qquad
+  y_j = c + j\,\Delta y,\quad j = 0, 1, \dots, n+1, \qquad
+  \Delta x = \Delta y = h = \frac{b - a}{n+1}.
+\]
+Los nodos con $i\in\{0, n+1\}$ o $j\in\{0, n+1\}$ están en la frontera ($\varphi = 0$, conocidos). Las
+incógnitas son los nodos interiores $i, j = 1, \dots, n$: $n$ por fila ($I-1$), $n$ por columna ($J-1$),
+$n^2$ en total.
+
+\paso{2}{Colocación de la EDP en el nodo \texorpdfstring{$(x_i, y_j)$}{(xi, yj)}}
+\[
+  \frac1v\left.\frac{\partial\varphi}{\partial t}\right|_{(x_i, y_j, t)}
+  = D\left[\left.\frac{\partial^2\varphi}{\partial x^2}\right|_{(x_i, y_j, t)}
+         + \left.\frac{\partial^2\varphi}{\partial y^2}\right|_{(x_i, y_j, t)}\right]
+  - \Sigma_a\,\varphi(x_i, y_j, t) + S(x_i, y_j),
+  \qquad i, j = 1, \dots, n .
+\]
+
+\paso{3}{Sustituir las segundas derivadas por la segunda diferencia dividida centrada}
+De la Sesión 02, en cada dirección (la otra coordenada y $t$ quedan fijas):
+\begin{align*}
+  \left.\frac{\partial^2\varphi}{\partial x^2}\right|_{(x_i, y_j, t)}
+  &= \frac{\varphi(x_{i-1}, y_j, t) - 2\varphi(x_i, y_j, t) + \varphi(x_{i+1}, y_j, t)}{h^2} + \Order{h^2},\\
+  \left.\frac{\partial^2\varphi}{\partial y^2}\right|_{(x_i, y_j, t)}
+  &= \frac{\varphi(x_i, y_{j-1}, t) - 2\varphi(x_i, y_j, t) + \varphi(x_i, y_{j+1}, t)}{h^2} + \Order{h^2}.
+\end{align*}
+Al quitar el $\Order{h^2}$ los valores exactos se vuelven aproximaciones,
+$\varphi_{ij}(t) \approx \varphi(x_i, y_j, t)$, y $S_{ij} = S(x_i, y_j)$:
+\[
+  \frac1v\frac{\dd\varphi_{ij}}{\dd t}
+  = \frac{D}{h^2}\big[\varphi_{i-1,j} - 2\varphi_{ij} + \varphi_{i+1,j}\big]
+  + \frac{D}{h^2}\big[\varphi_{i,j-1} - 2\varphi_{ij} + \varphi_{i,j+1}\big]
+  - \Sigma_a\varphi_{ij} + S_{ij}.
+\]
+Parte algebraica: se distribuye $D/h^2$ y se juntan los términos en $\varphi_{ij}$
+($-2 - 2 = -4$):
+\begin{align*}
+  \frac1v\frac{\dd\varphi_{ij}}{\dd t}
+  &= \frac{D}{h^2}\varphi_{i,j-1} + \frac{D}{h^2}\varphi_{i-1,j} - \frac{4D}{h^2}\varphi_{ij} - \Sigma_a\varphi_{ij}
+     + \frac{D}{h^2}\varphi_{i+1,j} + \frac{D}{h^2}\varphi_{i,j+1} + S_{ij}\\
+  &= -\left[-\frac{D}{h^2}\varphi_{i,j-1} - \frac{D}{h^2}\varphi_{i-1,j}
+     + \left(\frac{4D}{h^2} + \Sigma_a\right)\varphi_{ij}
+     - \frac{D}{h^2}\varphi_{i+1,j} - \frac{D}{h^2}\varphi_{i,j+1}\right] + S_{ij},
+\end{align*}
+con $i, j = 1, \dots, n$ y $\varphi_{0,j} = \varphi_{n+1,j} = \varphi_{i,0} = \varphi_{i,n+1} = 0$.
+
+\paso{4}{Ordenamiento fila por fila y estructura por bloques}
+Como en el programa EPDE, el nodo $(i, j)$ ocupa la posición $k = i + (j-1)\,n$ y
+\[
+  \vect{\varphi} = \big[\vect{\Phi}_1^T, \vect{\Phi}_2^T, \dots, \vect{\Phi}_n^T\big]^T,
+  \qquad
+  \vect{\Phi}_j = \big[\varphi_{1j}, \varphi_{2j}, \dots, \varphi_{nj}\big]^T \quad (\text{fila } j).
+\]
+En la ecuación del nodo $k$, los vecinos $(i\pm1, j)$ están en la misma fila (posiciones $k\pm1$, mismo
+bloque) y los vecinos $(i, j\pm1)$ están en las filas de arriba y de abajo (posiciones $k\pm n$, bloques
+contiguos). Por eso, con $\vect{S}$ ordenado igual,
+\[
+  \frac1v\frac{\dd\vect{\varphi}}{\dd t} = -\mat{A}_{2D}\vect{\varphi} + \vect{S},
+  \qquad
+  \mat{A}_{2D} =
+  \begin{pmatrix}
+    \mat{A}_{11} & \mat{A}_{12} &              &              \\
+    \mat{A}_{21} & \mat{A}_{22} & \ddots       &              \\
+                 & \ddots       & \ddots       & \mat{A}_{n-1,n}\\
+                 &              & \mat{A}_{n,n-1} & \mat{A}_{nn}
+  \end{pmatrix},
+\]
+con bloques de $n\times n$ (los que no aparecen son cero):
+\[
+  \mat{A}_{mm} = \tridiag\!\left(-\frac{D}{h^2},\ \frac{4D}{h^2} + \Sigma_a,\ -\frac{D}{h^2}\right),
+  \qquad
+  \mat{A}_{m,m\pm1} = -\frac{D}{h^2}\,\mat{I}_n .
+\]
+
+\paso{5}{Producto de Kronecker}
+Para $\mat{X}$ y $\mat{Y}$ de $n\times n$, $\mat{X}\otimes\mat{Y}$ es la matriz de $n^2\times n^2$ cuyo
+bloque $(m, m')$ es $x_{mm'}\mat{Y}$:
+\[
+  \mat{X}\otimes\mat{Y} =
+  \begin{pmatrix}
+    x_{11}\mat{Y} & x_{12}\mat{Y} & \cdots & x_{1n}\mat{Y}\\
+    \vdots        &               &        & \vdots       \\
+    x_{n1}\mat{Y} & x_{n2}\mat{Y} & \cdots & x_{nn}\mat{Y}
+  \end{pmatrix}.
+\]
+Igual para vectores: si $\vect{u}, \vect{w}\in\mathbb{R}^n$, $\vect{u}\otimes\vect{w}$ es el vector cuyo bloque
+$m$ es $u_m\vect{w}$. Se toma como matriz 1D la de $-D\,\dd^2/\dd x^2$ \textbf{sin} absorción:
+\[
+  \mat{A}_1 = \frac{D}{h^2}\tridiag(-1, 2, -1)\qquad (n\times n).
+\]
+\begin{itemize}
+  \item $\mat{I}_n\otimes\mat{A}_1$: el bloque $(m, m')$ es $\delta_{mm'}\mat{A}_1$, así que es
+        $\mat{A}_1$ en la diagonal y cero fuera. Actúa dentro de cada fila $\Rightarrow$ dirección $x$.
+  \item $\mat{A}_1\otimes\mat{I}_n$: el bloque $(m, m')$ es $(\mat{A}_1)_{mm'}\mat{I}_n$, o sea
+        $\frac{2D}{h^2}\mat{I}_n$ si $m' = m$, $-\frac{D}{h^2}\mat{I}_n$ si $m' = m\pm1$ y cero en otro caso.
+        Acopla la fila $j$ con las filas $j\pm1$ $\Rightarrow$ dirección $y$.
+\end{itemize}
+Sumando bloque a bloque:
+\begin{align*}
+  \text{bloque } (m, m):&\quad \mat{A}_1 + \frac{2D}{h^2}\mat{I}_n
+     = \frac{D}{h^2}\tridiag(-1, 2, -1) + \frac{D}{h^2}\tridiag(0, 2, 0)\\
+  &\quad= \frac{D}{h^2}\tridiag(-1, 4, -1)
+     = \tridiag\!\left(-\frac{D}{h^2},\ \frac{4D}{h^2},\ -\frac{D}{h^2}\right),\\
+  \text{bloque } (m, m\pm1):&\quad \mat{O} - \frac{D}{h^2}\mat{I}_n = -\frac{D}{h^2}\mat{I}_n .
+\end{align*}
+Comparando con el paso 4, sólo falta $\Sigma_a$ en la diagonal:
+\resultado{\mat{A}_{2D} = \mat{I}_n\otimes\mat{A}_1 + \mat{A}_1\otimes\mat{I}_n + \Sigma_a\,\mat{I}_{n^2},
+  \qquad \mat{A}_1 = \frac{D}{h^2}\tridiag(-1, 2, -1)}
+
+\begin{ojo}
+Con $\Sigma_a = 0$ (inciso c) es exactamente la forma del enunciado. Si se metiera la absorción en la matriz
+1D, $\tilde{\mat{A}}_1 = \mat{A}_1 + \Sigma_a\mat{I}_n$, entonces
+$\mat{I}\otimes\tilde{\mat{A}}_1 + \tilde{\mat{A}}_1\otimes\mat{I}$ tendría $2\Sigma_a$ en la diagonal:
+la absorción se contaría dos veces (una por dirección). Para usar la forma del enunciado con
+$\Sigma_a\neq0$ hay que repartirla: $\tilde{\mat{A}}_1 = \mat{A}_1 + \frac{\Sigma_a}{2}\mat{I}_n$.
+\end{ojo}
+
+\noindent\textbf{Ejemplo $n = 3$} ($9$ incógnitas, se factoriza $D/h^2$ y se toma $\Sigma_a = 0$):
+\[
+  \mat{A}_1 = \frac{D}{h^2}\begin{pmatrix} 2 & -1 & 0\\ -1 & 2 & -1\\ 0 & -1 & 2\end{pmatrix},
+  \qquad
+  \mat{A}_{2D} = \frac{D}{h^2}\left(
+  \begin{array}{ccc|ccc|ccc}
+     4 & -1 &  0 & -1 &  0 &  0 &  0 &  0 &  0\\
+    -1 &  4 & -1 &  0 & -1 &  0 &  0 &  0 &  0\\
+     0 & -1 &  4 &  0 &  0 & -1 &  0 &  0 &  0\\ \hline
+    -1 &  0 &  0 &  4 & -1 &  0 & -1 &  0 &  0\\
+     0 & -1 &  0 & -1 &  4 & -1 &  0 & -1 &  0\\
+     0 &  0 & -1 &  0 & -1 &  4 &  0 &  0 & -1\\ \hline
+     0 &  0 &  0 & -1 &  0 &  0 &  4 & -1 &  0\\
+     0 &  0 &  0 &  0 & -1 &  0 & -1 &  4 & -1\\
+     0 &  0 &  0 &  0 &  0 & -1 &  0 & -1 &  4
+  \end{array}\right).
+\]
+Los bloques diagonales vienen de $\mat{I}\otimes\mat{A}_1$ ($2$ en la diagonal y los $-1$ contiguos) más
+$\mat{A}_1\otimes\mat{I}$ (otros $2$ en la diagonal); los bloques $-\mat{I}$ vienen sólo de
+$\mat{A}_1\otimes\mat{I}$. Es el sistema pentadiagonal simétrico de la Sesión 009: las entradas más lejanas de la diagonal están a $n = 3$ posiciones.
+
+\paso{6}{Solución numérica del sistema de ODEs (cuarto paso de los apuntes): CN}
+Se multiplica el sistema por $v$:
+\[
+  \frac{\dd\vect{\varphi}}{\dd t} = -v\mat{A}_{2D}\vect{\varphi} + v\vect{S}, \qquad \vect{\varphi}(0) = \vect{\varphi}^0 .
+\]
+\emph{4A. Mallado en tiempo:} $t_\ell = \ell\,\Delta t$, $\ell = 0, 1, \dots, L$, $\Delta t = \tau/L$.
+
+\emph{4B. Colocar el sistema en $t_{\ell+1/2} = t_\ell + \Delta t/2$ (caso CN):}
+\[
+  \left.\frac{\dd\vect{\varphi}}{\dd t}\right|_{t_{\ell+1/2}}
+  = -v\mat{A}_{2D}\,\vect{\varphi}(t_{\ell+1/2}) + v\vect{S}.
+\]
+\emph{4C. Aplicar el método.} Por Taylor alrededor de $t_{\ell+1/2}$ (con $\vect{\varphi}'$, $\vect{\varphi}''$,
+$\vect{\varphi}'''$ evaluadas en $t_{\ell+1/2}$):
+\begin{align*}
+  \vect{\varphi}(t_{\ell+1}) &= \vect{\varphi}(t_{\ell+1/2}) + \frac{\Delta t}{2}\vect{\varphi}'
+     + \frac{\Delta t^2}{8}\vect{\varphi}'' + \frac{\Delta t^3}{48}\vect{\varphi}''' + \Order{\Delta t^4},\\
+  \vect{\varphi}(t_{\ell}) &= \vect{\varphi}(t_{\ell+1/2}) - \frac{\Delta t}{2}\vect{\varphi}'
+     + \frac{\Delta t^2}{8}\vect{\varphi}'' - \frac{\Delta t^3}{48}\vect{\varphi}''' + \Order{\Delta t^4}.
+\end{align*}
+Restando y dividiendo entre $\Delta t$, y sumando y dividiendo entre $2$:
+\[
+  \frac{\vect{\varphi}(t_{\ell+1}) - \vect{\varphi}(t_\ell)}{\Delta t}
+  = \left.\frac{\dd\vect{\varphi}}{\dd t}\right|_{t_{\ell+1/2}} + \Order{\Delta t^2},
+  \qquad
+  \frac{\vect{\varphi}(t_\ell) + \vect{\varphi}(t_{\ell+1})}{2} = \vect{\varphi}(t_{\ell+1/2}) + \Order{\Delta t^2}.
+\]
+Se sustituye en 4B, se quitan los $\Order{\Delta t^2}$ y $\vect{\varphi}(t_\ell)\to\vect{\varphi}^\ell$:
+\[
+  \frac{\vect{\varphi}^{\ell+1} - \vect{\varphi}^\ell}{\Delta t}
+  = -v\mat{A}_{2D}\,\frac{\vect{\varphi}^\ell + \vect{\varphi}^{\ell+1}}{2} + v\vect{S}.
+\]
+Parte algebraica (multiplicar por $\Delta t$, pasar las incógnitas a la izquierda y usar
+$\vect{\varphi} = \mat{I}\vect{\varphi}$ para factorizar):
+\begin{align*}
+  \vect{\varphi}^{\ell+1} - \vect{\varphi}^\ell
+  &= -\frac{v\Delta t}{2}\mat{A}_{2D}\vect{\varphi}^\ell - \frac{v\Delta t}{2}\mat{A}_{2D}\vect{\varphi}^{\ell+1} + v\Delta t\,\vect{S}\\
+  \vect{\varphi}^{\ell+1} + \frac{v\Delta t}{2}\mat{A}_{2D}\vect{\varphi}^{\ell+1}
+  &= \vect{\varphi}^\ell - \frac{v\Delta t}{2}\mat{A}_{2D}\vect{\varphi}^\ell + v\Delta t\,\vect{S}\\
+  \left(\mat{I} + \frac{v\Delta t}{2}\mat{A}_{2D}\right)\vect{\varphi}^{\ell+1}
+  &= \left(\mat{I} - \frac{v\Delta t}{2}\mat{A}_{2D}\right)\vect{\varphi}^\ell + v\Delta t\,\vect{S}
+\end{align*}
+\resultado{\mat{B}_{+}\vect{\varphi}^{\ell+1} = \mat{B}_{-}\vect{\varphi}^{\ell} + v\Delta t\,\vect{S},
+  \qquad \mat{B}_{\pm} = \mat{I} \pm \frac{v\Delta t}{2}\mat{A}_{2D},\qquad \ell = 0, 1, \dots, L-1}
+Es el «Caso CN» de la Sesión 006 con $\mat{A}\to v\mat{A}_{2D}$ y $\vect{Q}\to v\vect{S}$.
+
+\begin{ojo}
+Si la fuente dependiera del tiempo se usa $\vect{S}(t_{\ell+1/2})$ (o el promedio
+$\frac12[\vect{S}^\ell + \vect{S}^{\ell+1}]$), como el $\vect{Q}(t_{\ell+1/2})$ de los apuntes. Si la condición
+de Dirichlet no fuera homogénea, los valores de frontera pasan a $\vect{S}$ (en los nodos junto a la
+frontera), igual que $\alpha_0 u_a/h^2$ en el vector $\vect{Q}$ del programa PPDE.
+\end{ojo}
+
+% =====================================================================
+\inciso{b}{El lado izquierdo es simétrico definido positivo; Cholesky una sola vez}
+% =====================================================================
+Se supone lo físico: $v > 0$, $D > 0$, $\Delta t > 0$ y $\Sigma_a \ge 0$.
+
+\paso{1}{Dos propiedades del producto de Kronecker}
+\textbf{(P1)} $(\mat{X}\otimes\mat{Y})^T = \mat{X}^T\otimes\mat{Y}^T$. El bloque $(m, m')$ de la transpuesta es
+la transpuesta del bloque $(m', m)$:
+\[
+  \big(x_{m'm}\mat{Y}\big)^T = x_{m'm}\,\mat{Y}^T = (\mat{X}^T)_{mm'}\,\mat{Y}^T,
+\]
+que es el bloque $(m, m')$ de $\mat{X}^T\otimes\mat{Y}^T$.
+
+\textbf{(P2)} $(\mat{X}\otimes\mat{Y})(\vect{u}\otimes\vect{w}) = (\mat{X}\vect{u})\otimes(\mat{Y}\vect{w})$. El bloque $m$ del
+lado izquierdo es
+\[
+  \sum_{m'=1}^{n} x_{mm'}\mat{Y}\,(u_{m'}\vect{w}) = \Big(\sum_{m'=1}^{n} x_{mm'}u_{m'}\Big)\mat{Y}\vect{w}
+  = (\mat{X}\vect{u})_m\,\mat{Y}\vect{w},
+\]
+que es el bloque $m$ del lado derecho. (P2 se usa en el inciso c.)
+
+\paso{2}{Simetría}
+$\mat{A}_1^T = \mat{A}_1$ porque sus entradas $(i, i+1)$ e $(i+1, i)$ son ambas $-D/h^2$. Con (P1):
+\[
+  \mat{A}_{2D}^T = \mat{I}^T\otimes\mat{A}_1^T + \mat{A}_1^T\otimes\mat{I}^T + \Sigma_a\mat{I}^T
+  = \mat{I}\otimes\mat{A}_1 + \mat{A}_1\otimes\mat{I} + \Sigma_a\mat{I} = \mat{A}_{2D},
+\]
+y por lo tanto
+\[
+  \mat{B}_{+}^T = \mat{I}^T + \frac{v\Delta t}{2}\mat{A}_{2D}^T = \mat{I} + \frac{v\Delta t}{2}\mat{A}_{2D} = \mat{B}_{+}.
+\]
+Leído en el esténcil: el coeficiente de $\varphi_{k'}$ en la ecuación $k$ es $-D/h^2$, el mismo que el de
+$\varphi_k$ en la ecuación $k'$.
+
+\paso{3}{Forma cuadrática de \texorpdfstring{$\mat{A}_1$}{A1}}
+Para $\vect{z}\in\mathbb{R}^n$, con $z_0 = z_{n+1} = 0$ (así los renglones 1 y $n$ tienen la misma forma):
+\begin{align*}
+  \vect{z}^T\mat{A}_1\vect{z}
+  &= \frac{D}{h^2}\sum_{i=1}^{n} z_i\,(-z_{i-1} + 2z_i - z_{i+1})
+   = \frac{D}{h^2}\left[2\sum_{i=1}^{n} z_i^2 - \sum_{i=2}^{n} z_i z_{i-1} - \sum_{i=1}^{n-1} z_i z_{i+1}\right]\\
+  &= \frac{D}{h^2}\left[2\sum_{i=1}^{n} z_i^2 - 2\sum_{i=1}^{n-1} z_i z_{i+1}\right]
+  \qquad (\text{en la primera suma se cambió } i\to i+1).
+\end{align*}
+Por otro lado, desarrollando el cuadrado,
+\[
+  \sum_{i=1}^{n-1}(z_{i+1} - z_i)^2
+  = \underbrace{\sum_{i=2}^{n} z_i^2}_{\sum z_i^2 - z_1^2} + \underbrace{\sum_{i=1}^{n-1} z_i^2}_{\sum z_i^2 - z_n^2}
+    - 2\sum_{i=1}^{n-1} z_i z_{i+1},
+\]
+así que $z_1^2 + \sum_{i=1}^{n-1}(z_{i+1} - z_i)^2 + z_n^2 = 2\sum z_i^2 - 2\sum z_iz_{i+1}$ y
+\[
+  \vect{z}^T\mat{A}_1\vect{z} = \frac{D}{h^2}\left[z_1^2 + \sum_{i=1}^{n-1}(z_{i+1} - z_i)^2 + z_n^2\right] \ \ge\ 0 .
+\]
+Es cero sólo si $z_1 = 0$ y todas las diferencias son cero, o sea $\vect{z} = \vect{0}$: $\mat{A}_1$ es SDP.
+
+\paso{4}{Forma cuadrática de \texorpdfstring{$\mat{A}_{2D}$}{A2D} y de \texorpdfstring{$\mat{B}_{+}$}{B+}}
+Sea $\vect{x}\in\mathbb{R}^{n^2}$ con entradas $x_{ij}$ (orden fila por fila), filas
+$\vect{f}_j = [x_{1j}, \dots, x_{nj}]^T$ y columnas $\vect{c}_i = [x_{i1}, \dots, x_{in}]^T$.
+\begin{itemize}
+  \item El bloque $j$ de $(\mat{I}\otimes\mat{A}_1)\vect{x}$ es $\mat{A}_1\vect{f}_j$, entonces
+        $\vect{x}^T(\mat{I}\otimes\mat{A}_1)\vect{x} = \sum_{j=1}^{n}\vect{f}_j^T\mat{A}_1\vect{f}_j$.
+  \item El bloque $j$ de $(\mat{A}_1\otimes\mat{I})\vect{x}$ es $\sum_{j'}(\mat{A}_1)_{jj'}\vect{f}_{j'}$, entonces
+        \[
+          \vect{x}^T(\mat{A}_1\otimes\mat{I})\vect{x}
+          = \sum_{j=1}^{n}\sum_{j'=1}^{n}(\mat{A}_1)_{jj'}\,\vect{f}_j^T\vect{f}_{j'}
+          = \sum_{j=1}^{n}\sum_{j'=1}^{n}(\mat{A}_1)_{jj'}\sum_{i=1}^{n}x_{ij}x_{ij'}
+          = \sum_{i=1}^{n}\vect{c}_i^T\mat{A}_1\vect{c}_i .
+        \]
+\end{itemize}
+Por lo tanto, usando el paso 3 en cada fila y en cada columna,
+\[
+  \vect{x}^T\mat{A}_{2D}\vect{x}
+  = \underbrace{\sum_{j=1}^{n}\vect{f}_j^T\mat{A}_1\vect{f}_j}_{\ge0\ (\text{dirección } x)}
+  + \underbrace{\sum_{i=1}^{n}\vect{c}_i^T\mat{A}_1\vect{c}_i}_{\ge0\ (\text{dirección } y)}
+  + \underbrace{\Sigma_a\,\vect{x}^T\vect{x}}_{\ge0\ (\text{absorción})} \ \ge\ 0,
+\]
+y para $\vect{x}\neq\vect{0}$:
+\[
+  \vect{x}^T\mat{B}_{+}\vect{x} = \vect{x}^T\vect{x} + \frac{v\Delta t}{2}\,\vect{x}^T\mat{A}_{2D}\vect{x}
+  \ \ge\ \vect{x}^T\vect{x} > 0 .
+\]
+\resultado{\mat{B}_{+} = \mat{I} + \frac{v\Delta t}{2}\mat{A}_{2D}\ \text{es simétrica definida positiva para todo } \Delta t > 0}
+
+\begin{porque}
+Las sumas de diferencias al cuadrado son la versión discreta de $\int D\,|\nabla\varphi|^2$ (fuga) y
+$\Sigma_a\vect{x}^T\vect{x}$ es la absorción: las dos sólo quitan neutrones, por eso son $\ge 0$. Además
+$\vect{x}^T\mat{B}_+\vect{x}\ge\vect{x}^T\vect{x}$ dice que los valores propios de $\mat{B}_+$ son $\ge 1$, lo que se
+confirma en el inciso (c): $1 + \frac{v\Delta t}{2}\mu_{pq} > 1$.
+\end{porque}
+
+\paso{5}{Por qué Cholesky y por qué una sola vez}
+\emph{Cholesky.} Con las fórmulas de los apuntes, $\mat{B}_+ = \mat{G}\mat{G}^T$ con
+\[
+  g_{kk} = \sqrt{b_{kk} - \sum_{s=1}^{k-1} g_{ks}^2}, \qquad
+  g_{ik} = \frac{1}{g_{kk}}\left(b_{ik} - \sum_{s=1}^{k-1} g_{is}\,g_{ks}\right),\quad i > k .
+\]
+Que $\mat{B}_+$ sea SDP es justo lo que garantiza que todos los radicandos sean positivos (no hay que
+pivotear), y por ser simétrica sólo se guarda $\mat{G}$.
+
+\emph{Una sola vez.} Las entradas de $\mat{B}_+$ dependen sólo de $v$, $\Delta t$, $D$, $h$ y $\Sigma_a$; ninguna
+depende de $\ell$. En cada paso lo único que cambia es el lado derecho:
+\[
+  \mat{B}_{+}\vect{\varphi}^{\ell+1} = \vect{r}^\ell, \qquad \vect{r}^\ell = \mat{B}_{-}\vect{\varphi}^\ell + v\Delta t\,\vect{S}.
+\]
+Entonces se factoriza \textbf{antes} del ciclo en el tiempo y en cada paso sólo se hacen dos sustituciones:
+\[
+  \mat{G}\vect{y} = \vect{r}^\ell\ \ (\text{hacia adelante}), \qquad
+  \mat{G}^T\vect{\varphi}^{\ell+1} = \vect{y}\ \ (\text{hacia atrás}).
+\]
+\emph{Costo.} $\mat{B}_+$ es de orden $N = n^2$ con semiancho de banda $p = n$ (la entrada más lejana está en
+$k\pm n$). $\mat{G}$ no se sale de esa banda (ver recuadro), de modo que:
+\begin{itemize}
+  \item factorizar: cada columna $k$ tiene a lo más $p$ entradas $g_{ik}$ bajo la diagonal y cada una usa a lo
+        más $p$ productos $\Rightarrow$ a lo más $N p^2 = n^4$ productos;
+  \item cada paso: cada renglón de $\mat{G}$ tiene a lo más $p + 1$ entradas $\Rightarrow$ a lo más
+        $2N(p+1)\approx 2n^3$ productos en las dos sustituciones, más $\approx 5N$ del producto $\mat{B}_-\vect{\varphi}^\ell$
+        (esténcil de 5 puntos).
+\end{itemize}
+Para $L$ pasos: refactorizando en cada paso el costo es del orden de $L\,n^4$; factorizando una vez es del
+orden de $n^4 + L\,n^3$. Cada paso sale del orden de $n$ veces más barato (con $h = 1/100$, unas $100$ veces).
+
+\begin{porque}
+\textbf{$\mat{G}$ se queda dentro de la banda.} Si $b_{ik} = 0$ para $i - k > p$, por columnas: en la fórmula de
+$g_{ik}$ con $i - k > p$ se tiene $b_{ik} = 0$, y cada término $g_{is}g_{ks}$ tiene $s < k$, o sea
+$i - s > i - k > p$, así que $g_{is} = 0$ (columna anterior, ya probada). Entonces $g_{ik} = 0$. Lo que sí
+ocurre es \emph{relleno} dentro de la banda: los ceros entre la diagonal $k\pm1$ y la $k\pm n$ se vuelven
+distintos de cero en $\mat{G}$ (Problema~\ref{prob:6}\,(e)).
+\end{porque}
+
+\begin{ojo}
+No conviene calcular $\mat{B}_+^{-1}$: la inversa de una matriz banda es llena ($N^2 = n^4$ entradas), así que
+cada producto $\mat{B}_+^{-1}\vect{r}^\ell$ cuesta $n^4$, lo mismo que refactorizar, además de los $\sim N^3 = n^6$
+de calcularla. En el programa PPDE se escribe \texttt{inv(Id+dt*Ar/2)} dentro del ciclo; como ahí
+\texttt{Ar} no cambia de un paso a otro, bastaría factorizar antes del ciclo.
+\end{ojo}
+
+% =====================================================================
+\inciso{c}{Radio espectral y cota de Euler explícito}
+% =====================================================================
+
+\paso{1}{Valores propios de \texorpdfstring{$\mat{A}_1$}{A1}}
+Se propone $\vect{w}_p$ con entradas $(\vect{w}_p)_i = \sin(i\theta_p)$, $\theta_p = \dfrac{p\pi}{n+1}$,
+$p = 1, \dots, n$. Con la identidad $\sin(\alpha - \beta) + \sin(\alpha + \beta) = 2\sin\alpha\cos\beta$
+(sumar $\sin(\alpha\pm\beta) = \sin\alpha\cos\beta \pm \cos\alpha\sin\beta$):
+\begin{align*}
+  (\mat{A}_1\vect{w}_p)_i
+  &= \frac{D}{h^2}\Big[-\sin\big((i-1)\theta_p\big) + 2\sin(i\theta_p) - \sin\big((i+1)\theta_p\big)\Big]\\
+  &= \frac{D}{h^2}\Big[2\sin(i\theta_p) - 2\sin(i\theta_p)\cos\theta_p\Big]
+   = \frac{2D}{h^2}\big(1 - \cos\theta_p\big)\sin(i\theta_p).
+\end{align*}
+Esto vale también en $i = 1$ y en $i = n$, donde al renglón le falta un vecino: el término que falta sería
+$\sin(0) = 0$ en $i = 1$ y $\sin\big((n+1)\theta_p\big) = \sin(p\pi) = 0$ en $i = n$ (la frontera de Dirichlet).
+\[
+  \mat{A}_1\vect{w}_p = \lambda_p\vect{w}_p, \qquad \lambda_p = \frac{2D}{h^2}\big(1 - \cos\theta_p\big).
+\]
+
+\paso{2}{Valores propios de \texorpdfstring{$\mat{A}_{2D}$}{A2D}}
+Sea $\vect{w}_{pq} = \vect{w}_q\otimes\vect{w}_p$. Su bloque $j$ es $\sin(j\theta_q)\,\vect{w}_p$, o sea su entrada del
+nodo $(i, j)$ es $\sin(i\theta_p)\sin(j\theta_q)$ (la misma forma de vector propio del problema 6 de la lista de ejercicios del primer parcial y
+del problema 1 del examen B22). Con (P2):
+\begin{align*}
+  \mat{A}_{2D}\vect{w}_{pq}
+  &= (\mat{I}\vect{w}_q)\otimes(\mat{A}_1\vect{w}_p) + (\mat{A}_1\vect{w}_q)\otimes(\mat{I}\vect{w}_p) + \Sigma_a\vect{w}_{pq}\\
+  &= \vect{w}_q\otimes(\lambda_p\vect{w}_p) + (\lambda_q\vect{w}_q)\otimes\vect{w}_p + \Sigma_a\vect{w}_{pq}
+   = (\lambda_p + \lambda_q + \Sigma_a)\,\vect{w}_{pq}.
+\end{align*}
+Con $\Sigma_a = 0$:
+\[
+  \mu_{pq} = \lambda_p + \lambda_q = \frac{2D}{h^2}\left[2 - \cos\frac{p\pi}{n+1} - \cos\frac{q\pi}{n+1}\right],
+  \qquad p, q = 1, \dots, n,
+\]
+que es la $\mu_{ij}$ del enunciado.
+
+\emph{Son todos.} Para $p\neq p'$, $\lambda_p\neq\lambda_{p'}$ ($\cos$ es estrictamente decreciente en
+$(0, \pi)$). Como $\mat{A}_1$ es simétrica,
+\[
+  \lambda_p\,\vect{w}_{p'}^T\vect{w}_p = \vect{w}_{p'}^T\mat{A}_1\vect{w}_p = (\mat{A}_1\vect{w}_{p'})^T\vect{w}_p
+  = \lambda_{p'}\,\vect{w}_{p'}^T\vect{w}_p
+  \ \Longrightarrow\ (\lambda_p - \lambda_{p'})\,\vect{w}_{p'}^T\vect{w}_p = 0
+  \ \Longrightarrow\ \vect{w}_{p'}^T\vect{w}_p = 0 .
+\]
+Además, sumando bloque por bloque,
+\[
+  (\vect{w}_q\otimes\vect{w}_p)^T(\vect{w}_{q'}\otimes\vect{w}_{p'})
+  = \sum_{j=1}^{n}(\vect{w}_q)_j(\vect{w}_{q'})_j\,\vect{w}_p^T\vect{w}_{p'}
+  = (\vect{w}_q^T\vect{w}_{q'})(\vect{w}_p^T\vect{w}_{p'}),
+\]
+que es cero si $(p, q)\neq(p', q')$. Son $n^2$ vectores ortogonales (y distintos de cero) en
+$\mathbb{R}^{n^2}$: forman una base, así que no hay más valores propios.
+
+\paso{3}{Radio espectral}
+De la Sesión 08, $\rho(\mat{A}_{2D}) = \max_{p,q}|\mu_{pq}|$. Como $\theta_p\in(0, \pi)$, $\cos\theta_p < 1$ y todos
+los $\mu_{pq} > 0$, así que $\rho = \max\mu_{pq}$. $\mu_{pq}$ crece cuando los cosenos bajan, y $\cos\theta_p$ es
+mínimo en $p = n$:
+\[
+  \cos\frac{n\pi}{n+1} = \cos\left(\pi - \frac{\pi}{n+1}\right) = -\cos\frac{\pi}{n+1}.
+\]
+Entonces
+\[
+  \rho(\mat{A}_{2D}) = \mu_{nn} = \frac{2D}{h^2}\left[2 + 2\cos\frac{\pi}{n+1}\right]
+  = \frac{4D}{h^2}\left[1 + \cos\frac{\pi}{n+1}\right] \ <\ \frac{8D}{h^2}\quad\text{para todo } n .
+\]
+\emph{Cuando $n\to\infty$.} Como $h = (b-a)/(n+1)$, $n\to\infty$ es lo mismo que $h\to0$ y $\rho$ crece sin
+cota; lo que tiene límite es el corchete: $1 + \cos\frac{\pi}{n+1}\to 2$. Con
+$\cos u = 1 - \frac{u^2}{2} + \Order{u^4}$ y $u = \frac{\pi}{n+1} = \frac{\pi h}{b-a}$:
+\[
+  \rho(\mat{A}_{2D}) = \frac{4D}{h^2}\left[2 - \frac{\pi^2h^2}{2(b-a)^2} + \Order{h^4}\right]
+  = \frac{8D}{h^2} - \frac{2\pi^2D}{(b-a)^2} + \Order{h^2}.
+\]
+\resultado{\rho(\mat{A}_{2D}) = \frac{4D}{h^2}\left[1 + \cos\frac{\pi}{n+1}\right] \sim \frac{8D}{h^2},
+  \qquad \frac{\rho(\mat{A}_{2D})\,h^2}{8D}\xrightarrow[n\to\infty]{} 1}
+(Con $\Sigma_a\neq0$ todos los valores propios se recorren en $\Sigma_a$: $\rho = \frac{4D}{h^2}[\dots] + \Sigma_a$.)
+
+\paso{4}{Cota de Euler explícito}
+FE (caso FE de la Sesión 006, colocando en $t_\ell$ con diferencia progresiva):
+\[
+  \frac{\vect{\varphi}^{\ell+1} - \vect{\varphi}^\ell}{\Delta t} = -v\mat{A}_{2D}\vect{\varphi}^\ell + v\vect{S}
+  \ \Longrightarrow\
+  \vect{\varphi}^{\ell+1} = \big(\mat{I} - v\Delta t\,\mat{A}_{2D}\big)\vect{\varphi}^\ell + v\Delta t\,\vect{S}.
+\]
+Si $\vect{e}^\ell$ es la diferencia entre dos corridas que empiezan distinto (por ejemplo, un error de redondeo),
+la fuente se cancela y
+\[
+  \vect{e}^{\ell+1} = \big(\mat{I} - v\Delta t\,\mat{A}_{2D}\big)\vect{e}^\ell
+  \ \Longrightarrow\ \vect{e}^\ell = \big(\mat{I} - v\Delta t\,\mat{A}_{2D}\big)^\ell\vect{e}^0,
+\]
+igual que $\vect{\varepsilon}^{(k)} = \mat{M}^k\vect{\varepsilon}^{(0)}$ en la Sesión 08. Escribiendo
+$\vect{e}^0 = \sum_{p,q} c_{pq}\vect{w}_{pq}$ y usando $(\mat{I} - v\Delta t\mat{A}_{2D})\vect{w}_{pq} = (1 - v\Delta t\mu_{pq})\vect{w}_{pq}$:
+\[
+  \vect{e}^\ell = \sum_{p,q} c_{pq}\,\big(1 - v\Delta t\,\mu_{pq}\big)^\ell\,\vect{w}_{pq}.
+\]
+Ningún modo crece si $|1 - v\Delta t\mu_{pq}|\le1$ para todo $p, q$, es decir
+$-1\le 1 - v\Delta t\mu_{pq}\le 1$. La desigualdad derecha siempre se cumple ($v\Delta t\mu_{pq} > 0$); la
+izquierda es $v\Delta t\,\mu_{pq}\le 2$, y basta pedirla para el mayor:
+\[
+  v\Delta t \le \frac{2}{\rho(\mat{A}_{2D})} = \frac{h^2}{2D\left[1 + \cos\frac{\pi}{n+1}\right]} .
+\]
+Como $1 + \cos\frac{\pi}{n+1} < 2$, el lado derecho es mayor que $\frac{h^2}{4D}$; por eso pedir
+$v\Delta t\le h^2/(4D)$ asegura la estabilidad para cualquier $n$, y cuando $n\to\infty$ el lado derecho tiende
+a $h^2/(4D)$, así que esa cota no se puede mejorar por un factor fijo.
+\resultado{\text{Euler explícito en 2D es estable si}\quad v\Delta t \le \frac{h^2}{4D}}
+
+\begin{center}
+\tablapython{p08_c_radio}
+\end{center}
+La tabla (generada con $D = v = 1$ y $[a, b] = [0, 1]$) confirma la fórmula de $\rho$ contra los valores
+propios numéricos de $\mat{A}_{2D}$, que $\rho h^2/(8D)\to1$ y que $2/(v\rho)$ se acerca a $h^2/(4vD)$ por arriba.
+
+\begin{ojo}
+En 1D, $\rho(\mat{A}_1) = \lambda_n = \frac{2D}{h^2}\big[1 + \cos\frac{\pi}{n+1}\big] < \frac{4D}{h^2}$ y FE pide
+$v\Delta t\le h^2/(2D)$: en 2D la cota es dos veces más estricta (y en 3D sería $h^2/(6D)$). Con los datos
+del inciso (d) ($h = 1/20$, $D = v = 1$), FE en 1D necesita $\Delta t\le 2/\rho(\mat{A}_1) = 1.25774\times10^{-3}$;
+los cuatro $\Delta t$ del inciso (d) son mayores, así que FE explotaría. CN no tiene ese problema: su factor
+$g_{\mathrm{CN}} = \frac{1 - z/2}{1 + z/2}$, $z = v\Delta t\mu_{pq} > 0$, cumple $-(1 + z/2) < 1 - z/2 < 1 + z/2$,
+o sea $|g_{\mathrm{CN}}| < 1$ para todo $\Delta t > 0$ (y $\mat{B}_+$ es SDP para todo $\Delta t$, inciso b).
+\end{ojo}
+
+% =====================================================================
+\inciso{d}{Programa: CN en 1D y orden 2 en \texorpdfstring{$\Delta t$}{dt}}
+% =====================================================================
+Programa: \texttt{python/problemas/p08\_difusion\_2d\_orden.py} (también verifica numéricamente los
+incisos a--c).
+
+\paso{1}{Datos en la notación de los apuntes}
+$[a, b] = [0, 1]$ (el $L = 1$ del enunciado), $h = 1/20 \Rightarrow I = 20$ subintervalos y
+$n = I - 1 = 19$ nodos interiores, $x_i = ih = i/20$, $i = 1, \dots, 19$; $D = v = 1$, $\Sigma_a = 0$,
+$\tau = 0.1$ (el $T$ del enunciado) y $L = \tau/\Delta t = 5, 10, 20, 40$. El enunciado no da fuente y su
+solución exacta no tiene parte estacionaria, así que $S = 0$.
+
+\paso{2}{Esquema CN en 1D}
+Es el inciso (a) con una sola dirección: $\frac{\dd\vect{\varphi}}{\dd t} = -v\mat{A}_1\vect{\varphi}$,
+$\mat{A}_1 = \frac{D}{h^2}\tridiag(-1, 2, -1)$ de $19\times19$ con $D/h^2 = 400$. Definiendo
+$\sigma = \dfrac{v\Delta t\,D}{h^2}$:
+\[
+  \frac{v\Delta t}{2}\mat{A}_1 = \frac{\sigma}{2}\tridiag(-1, 2, -1) = \tridiag\!\left(-\frac{\sigma}{2},\ \sigma,\ -\frac{\sigma}{2}\right),
+\]
+\[
+  \mat{B}_+ = \tridiag\!\left(-\frac{\sigma}{2},\ 1 + \sigma,\ -\frac{\sigma}{2}\right), \qquad
+  \mat{B}_- = \tridiag\!\left(\frac{\sigma}{2},\ 1 - \sigma,\ \frac{\sigma}{2}\right),
+\]
+\[
+  \mat{B}_+\vect{\varphi}^{\ell+1} = \mat{B}_-\vect{\varphi}^\ell, \qquad \ell = 0, \dots, L-1,
+  \qquad \vect{\varphi}^0 = [\sin\pi x_1, \dots, \sin\pi x_{19}]^T .
+\]
+
+\paso{3}{Solución exacta del sistema semidiscreto}
+$(\vect{\varphi}^0)_i = \sin(\pi x_i) = \sin(i\pi h) = \sin\big(\tfrac{i\pi}{n+1}\big)$, porque $h = \frac{1}{n+1}$:
+la condición inicial es \emph{exactamente} el vector propio $\vect{w}_1$ del inciso (c) ($p = 1$), con valor propio
+\[
+  \lambda_1 = \frac{2D}{h^2}\left(1 - \cos\frac{\pi}{n+1}\right) = \frac{2}{h^2}\left(1 - \cos\pi h\right) = \mu
+  \qquad (D = 1).
+\]
+Se propone $\vect{\varphi}(t) = e^{-v\mu t}\vect{w}_1$:
+$\frac{\dd\vect{\varphi}}{\dd t} = -v\mu\,e^{-v\mu t}\vect{w}_1 = -v\,e^{-v\mu t}\mat{A}_1\vect{w}_1 = -v\mat{A}_1\vect{\varphi}(t)$ y
+$\vect{\varphi}(0) = \vect{w}_1$; por unicidad es la solución (es la fórmula
+$\vect{U} = \sum\gamma_i\vect{K}_i e^{-\lambda_i t}$ del programa SolExSisODE con un solo modo). Numéricamente:
+\[
+  \mu = 800\left(1 - \cos\frac{\pi}{20}\right) = 9.849328, \qquad
+  \varphi_i(\tau) = e^{-0.9849328}\sin(\pi x_i) = 0.373464\,\sin(\pi x_i).
+\]
+
+\paso{4}{Algoritmo: Cholesky tridiagonal una sola vez}
+$\mat{G}$ es bidiagonal inferior (la banda $p = 1$ se conserva). Igualando las entradas $(i, i)$ e
+$(i, i-1)$ de $\mat{G}\mat{G}^T$ con las de $\mat{B}_+$:
+\[
+  g_{i,i-1}^2 + g_{ii}^2 = b_{ii}, \qquad g_{i,i-1}\,g_{i-1,i-1} = b_{i,i-1},
+\]
+\[
+  g_{11} = \sqrt{b_{11}}, \qquad g_{i,i-1} = \frac{b_{i,i-1}}{g_{i-1,i-1}}, \qquad
+  g_{ii} = \sqrt{b_{ii} - g_{i,i-1}^2}, \qquad i = 2, \dots, n .
+\]
+Antes del ciclo se calcula $\mat{G}$; en cada paso $\ell$:
+\[
+  \vect{r}^\ell = \mat{B}_-\vect{\varphi}^\ell,\qquad
+  y_1 = \frac{r_1}{g_{11}},\ \ y_i = \frac{r_i - g_{i,i-1}\,y_{i-1}}{g_{ii}};\qquad
+  \varphi_n^{\ell+1} = \frac{y_n}{g_{nn}},\ \ \varphi_i^{\ell+1} = \frac{y_i - g_{i+1,i}\,\varphi_{i+1}^{\ell+1}}{g_{ii}} .
+\]
+Por ejemplo, con $\Delta t = 0.02$: $\sigma = 0.02(400) = 8$, $b_{ii} = 9$, $b_{i,i\pm1} = -4$, y
+$g_{11} = 3$, $g_{21} = -4/3$, $g_{22} = \sqrt{9 - 16/9} = \sqrt{65}/3 = 2.687419$.
+
+\paso{5}{Error, rapidez y orden de convergencia}
+Con las definiciones de la Sesión 02 (con $\Delta t$ en lugar de $h$) y la norma infinito del programa DD2:
+\[
+  \varepsilon(\Delta t) = \max_{1\le i\le 19}\big|\varphi_i(\tau) - \varphi_i^L\big|, \qquad
+  R(\Delta t) = \frac{\varepsilon(\Delta t)}{\varepsilon(\Delta t/2)}, \qquad
+  \OCG(\Delta t) = \frac{\ln R(\Delta t)}{\ln 2}.
+\]
+\begin{center}
+\tablapython{p08_d_errores}
+\end{center}
+($\varphi_{10}$ es el nodo $x_{10} = 1/2$, donde $\sin\pi x$ vale $1$ y el error es máximo.)
+\resultado{R(\Delta t)\to 4,\qquad \OCG(\Delta t)\to 2:\quad \text{al dividir } \Delta t \text{ entre 2 el error se divide entre } 4 = 2^2}
+
+\paso{6}{Por qué sale exactamente 2}
+Como $\mat{A}_1\vect{w}_1 = \mu\vect{w}_1$, con $z = v\mu\Delta t$:
+$\mat{B}_\pm\vect{w}_1 = \big(1 \pm \tfrac{z}{2}\big)\vect{w}_1$. Si $\vect{\varphi}^\ell = g^\ell\vect{w}_1$ con
+$g = \frac{1 - z/2}{1 + z/2}$, entonces
+\[
+  \mat{B}_+\big(g^{\ell+1}\vect{w}_1\big) = g^{\ell+1}\Big(1 + \frac z2\Big)\vect{w}_1 = g^\ell\Big(1 - \frac z2\Big)\vect{w}_1
+  = \mat{B}_-\vect{\varphi}^\ell,
+\]
+y como $\mat{B}_+$ es invertible (SDP), $\vect{\varphi}^{\ell+1} = g^{\ell+1}\vect{w}_1$. Por inducción
+$\vect{\varphi}^L = g^L\vect{w}_1$ (el programa lo confirma con diferencias de $10^{-15}$), y
+\[
+  \varepsilon(\Delta t) = \big|e^{-v\mu\tau} - g^L\big|\max_i\sin(\pi x_i) = \big|e^{-v\mu\tau} - g^L\big| .
+\]
+Con $\ln(1+u) = u - \frac{u^2}{2} + \frac{u^3}{3} - \frac{u^4}{4} + \Order{u^5}$:
+\begin{align*}
+  \ln\Big(1 - \frac z2\Big) &= -\frac z2 - \frac{z^2}{8} - \frac{z^3}{24} - \frac{z^4}{64} + \Order{z^5},\\
+  \ln\Big(1 + \frac z2\Big) &= \phantom{-}\frac z2 - \frac{z^2}{8} + \frac{z^3}{24} - \frac{z^4}{64} + \Order{z^5},\\
+  \ln g = \ln\Big(1 - \frac z2\Big) - \ln\Big(1 + \frac z2\Big) &= -z - \frac{z^3}{12} + \Order{z^5}
+  \qquad (\text{las potencias pares se cancelan}).
+\end{align*}
+Con $L = \tau/\Delta t$ y $z = v\mu\Delta t$: $Lz = v\mu\tau$, $Lz^3 = \frac{\tau}{\Delta t}(v\mu)^3\Delta t^3 = (v\mu)^3\tau\,\Delta t^2$
+y $L\,\Order{z^5} = \Order{\Delta t^4}$. Entonces, con $e^y = 1 + y + \Order{y^2}$,
+\[
+  g^L = e^{L\ln g} = e^{-v\mu\tau}\,e^{-\frac{(v\mu)^3\tau}{12}\Delta t^2 + \Order{\Delta t^4}}
+  = e^{-v\mu\tau}\left[1 - \frac{(v\mu)^3\tau}{12}\Delta t^2 + \Order{\Delta t^4}\right],
+\]
+\[
+  \varepsilon(\Delta t) = C\,\Delta t^2 + \Order{\Delta t^4}, \qquad
+  C = \frac{e^{-v\mu\tau}(v\mu)^3\tau}{12} = \frac{(0.373464)(955.476)(0.1)}{12} = 2.97363,
+\]
+que es el valor al que tiende la columna $\varepsilon/\Delta t^2$ de la tabla. Por último,
+\[
+  R(\Delta t) = \frac{C\Delta t^2 + \Order{\Delta t^4}}{C\Delta t^2/4 + \Order{\Delta t^4}} = 4\big[1 + \Order{\Delta t^2}\big]
+  \ \Longrightarrow\ \OCG(\Delta t)\to\frac{\ln 4}{\ln 2} = 2 .
+\]
+Como $g^L < e^{-v\mu\tau}$, CN decae un poquito más rápido que la semidiscreta (se ve en la tabla:
+$0.372270 < 0.373464$). Es la misma cuenta del Problema~\ref{prob:2}: error local $\sim z^3/12$ por paso,
+$\tau/\Delta t$ pasos $\Rightarrow$ error global $\Order{\Delta t^2}$ (local $\Order{h^3}$, global $\Order{h^2}$ en la Sesión 02).
+
+\figurapython{p08_d_orden}{Error de CN en $\tau = 0.1$ contra $\Delta t$ ($h = 1/20$). Contra la solución
+semidiscreta el error sigue la recta $C\Delta t^2$; contra la exacta de la EDP se estanca en el error espacial.}{fig:p08orden}{0.75}
+
+\begin{ojo}
+\textbf{¿Por qué comparar contra la semidiscreta y no contra la exacta de la EDP,
+$e^{-\pi^2 D v\tau}\sin\pi x$?} Porque la semidiscreta ya tiene el error espacial:
+$\mu = \frac{2}{h^2}(1 - \cos\pi h) = \pi^2 - \frac{\pi^4h^2}{12} + \Order{h^4}$, o sea $\pi^2 - \mu = 0.0202769$, y
+$e^{-\mu\tau} - e^{-\pi^2\tau} = 0.373464 - 0.372708 = 7.565\times10^{-4}$, que no depende de $\Delta t$. Contra la
+EDP el error tiende a ese valor y no a cero (el programa da $4.38\times10^{-4}$, $4.59\times10^{-4}$,
+$6.82\times10^{-4}$, $7.38\times10^{-4}$, con $R < 1$): el orden 2 en $\Delta t$ queda tapado. En $\Delta t = 0.02$ el
+error es menor contra la EDP porque el error en el tiempo ($g^L$ abajo) y el espacial ($e^{-\mu\tau}$ arriba)
+tienen signos opuestos y se cancelan en parte. Comparar contra la semidiscreta aísla el error en el tiempo.
+\end{ojo}

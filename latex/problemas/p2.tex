@@ -1,0 +1,290 @@
+% !TeX root = ../main.tex
+\problema{2}{Demostración numérica: CN es de orden 3 local y 2 global}{8}
+
+\begin{enunciado}
+	Considere $N' = -\lambda N$ con $\lambda = 1$, $N_0 = 100$.
+	\begin{enumerate}[label=(\alph*)]
+		\item Demuestre con $z = \lambda h$, que
+		$e^{z} - R_{\mathrm{CN}}(z) = -\dfrac{z^3}{12} + \Order{z^4}$,
+		$R_{\mathrm{CN}}(z) = \dfrac{1 + z/2}{1 - z/2}$.
+		Concluya que el error local es $\dfrac{\lambda^3 h^3}{12} N_n + \Order{h^4}$.
+		\item \textbf{Error local.} Complete la tabla con
+		$e_{\mathrm{loc}}(\lambda h) = \left| e^{-\lambda h} - R_{\mathrm{CN}}(-\lambda h)\right|$
+		(un solo paso desde $t = 0$) y
+		$p_{\mathrm{loc}} = \log_2\!\big(e_{\mathrm{loc}}(2h)/e_{\mathrm{loc}}(h)\big)$.
+		
+		\begin{center}
+			\begin{tabular}{cccc}\toprule
+				$h$ & $e_{\mathrm{loc}}(h)$ & $e_{\mathrm{loc}}(2h)/e_{\mathrm{loc}}(h)$ & $p_{\mathrm{loc}}$\\\midrule
+				0.40 & & --- & --- \\ 0.20 & & & \\ 0.10 & & & \\ 0.05 & & & \\\bottomrule
+			\end{tabular}
+		\end{center}
+		\item \textbf{Error global.} Integre hasta $T = 1$ con $h = \tfrac12, \tfrac14, \tfrac18, \tfrac1{16}$
+		y complete $E(h) = |N_{T/h} - e^{-\lambda}|$ y $p_{\mathrm{glob}}$.
+
+		\begin{center}
+			\begin{tabular}{cccc}\toprule
+				$h$ & $E(h)$ & $E(2h)/E(h)$ & $p_{\mathrm{glob}}$\\\midrule
+				1/2 & & --- & --- \\ 1/4 & & & \\ 1/8 & & & \\ 1/16 & & & \\\bottomrule
+			\end{tabular}
+		\end{center}
+		\item Grafique ambos errores en ejes log--log y estime las pendientes. Explique por qué
+		$n = T/h$ pasos con error local $\Order{h^3}$ producen un error global $\Order{h^2}$.
+	\end{enumerate}
+\end{enunciado}
+
+\subsubsection*{Solución}
+\[
+\ddt{N} = -\lambda\,N(t), \qquad t \in [0, T], \qquad N(0) = N_0 = 100, \qquad \lambda = 1,
+\]
+con solución exacta
+\[
+N(t) = N_0\, e^{-\lambda t} = 100\, e^{-t}.
+\]
+
+
+\inciso{a}{Demo}
+
+\paso{1}{Esquema CN}
+Es el mismo esquema del Problema 1 (a): mallado $t_n = n h$, colocación de la EDO en $t_{\nmed}$ y primera
+diferencia dividida centrada,
+\[
+\frac{N_{n+1} - N_n}{h} = -\lambda\,\frac{N_n + N_{n+1}}{2}.
+\]
+parte algebraica
+\begin{align*}
+	N_{n+1} - N_n &= -\frac{\lambda h}{2}\,N_n - \frac{\lambda h}{2}\,N_{n+1}\\
+	N_{n+1} + \frac{\lambda h}{2}\,N_{n+1} &= N_n - \frac{\lambda h}{2}\,N_n\\
+	N_{n+1}\left(1 + \frac{\lambda h}{2}\right) &= N_n\left(1 - \frac{\lambda h}{2}\right)\\
+	N_{n+1} &= \left(\frac{1 - \frac{\lambda h}{2}}{1 + \frac{\lambda h}{2}}\right) N_n
+\end{align*}
+Si en $R_{\mathrm{CN}}(z) = \dfrac{1 + z/2}{1 - z/2}$ se pone $z = -\lambda h$:
+\[
+R_{\mathrm{CN}}(-\lambda h) = \frac{1 + \frac{-\lambda h}{2}}{1 - \frac{-\lambda h}{2}}
+= \frac{1 - \frac{\lambda h}{2}}{1 + \frac{\lambda h}{2}},
+\]
+\[
+N_{n+1} = R_{\mathrm{CN}}(-\lambda h)\,N_n .
+\]
+La exacta es:
+\[
+N(t_{n+1}) = N_0\, e^{-\lambda (t_n + h)} = e^{-\lambda h}\, N_0\, e^{-\lambda t_n} = e^{-\lambda h}\,N(t_n).
+\]
+Tenemos que comparar $e^{-\lambda h}$ (exacta) contra $R_{\mathrm{CN}}(-\lambda h)$ 
+
+
+\paso{2}{Serie de $R_{\mathrm{CN}}(z)$}
+serie del denominador:
+\[
+R_{\mathrm{CN}}(z) = \frac{1 + \frac{z}{2}}{1 - \frac{z}{2}} = \left(1 + \frac{z}{2}\right)\cdot\frac{1}{1 - \frac{z}{2}} .
+\]
+
+\textbf{Serie geométrica.} Para $|w| < 1$,
+\[
+\frac{1}{1 - w} = 1 + w + w^2 + w^3 + \Order{w^4}.
+\]
+Se comprueba multiplicando por $(1 - w)$:
+\begin{align*}
+	(1 - w)\left(1 + w + w^2 + w^3\right) &= 1 + w + w^2 + w^3 - w - w^2 - w^3 - w^4\\
+	&= 1 - w^4
+\end{align*}
+como $w$ es pequeño entonces $w^4$ es despreciable $(1 - w)(1 + w + w^2 + w^3) \approx 1$.
+
+\textbf{Con $w = z/2$}
+\begin{align*}
+	\frac{1}{1 - \frac{z}{2}} &= 1 + \frac{z}{2} + \left(\frac{z}{2}\right)^2 + \left(\frac{z}{2}\right)^3 + \Order{z^4}\\
+	&= 1 + \frac{z}{2} + \frac{z^2}{4} + \frac{z^3}{8} + \Order{z^4}
+\end{align*}
+
+\textbf{Multiplicar por el numerador.} En $R_{\mathrm{CN}}(z) = \left(1 + \frac{z}{2}\right)\cdot\frac{1}{1 - z/2}$
+\begin{align*}
+	R_{\mathrm{CN}}(z) &= \left(1 + \frac{z}{2}\right)\left(1 + \frac{z}{2} + \frac{z^2}{4} + \frac{z^3}{8} + \Order{z^4}\right)\\
+	&= 1\cdot\left(1 + \frac{z}{2} + \frac{z^2}{4} + \frac{z^3}{8}\right)
+	+ \frac{z}{2}\cdot\left(1 + \frac{z}{2} + \frac{z^2}{4} + \frac{z^3}{8}\right) + \Order{z^4}\\
+	&= 1 + \frac{z}{2} + \frac{z^2}{4} + \frac{z^3}{8}
+	+ \frac{z}{2} + \frac{z^2}{4} + \frac{z^3}{8} + \frac{z^4}{16} + \Order{z^4}\\
+	&= 1 + \frac{z}{2} + \frac{z^2}{4} + \frac{z^3}{8}
+	+ \frac{z}{2} + \frac{z^2}{4} + \frac{z^3}{8} + \Order{z^4}
+\end{align*}
+Reacomodando
+\begin{align*}
+	R_{\mathrm{CN}}(z) &= 1 + \left(\frac12 + \frac12\right) z + \left(\frac14 + \frac14\right) z^2 + \left(\frac18 + \frac18\right) z^3 + \Order{z^4}\\
+	&= 1 + z + \frac{2}{4}\,z^2 + \frac{2}{8}\,z^3 + \Order{z^4}\\
+	&= 1 + z + \frac{z^2}{2} + \frac{z^3}{4} + \Order{z^4}
+\end{align*}
+\resultado{R_{\mathrm{CN}}(z) = 1 + z + \frac{z^2}{2} + \frac{z^3}{4} + \Order{z^4}}
+\paso{3}{Restar la serie de Taylor de $e^{z}$}
+Para comparar $e^{z}$ (exacta) con $R_{\mathrm{CN}}(z)$ potencia por potencia, se escribe $e^{z}$ también como serie.
+Por Taylor alrededor de $z = 0$, como todas las derivadas de $e^{z}$ son $e^{z}$ y en $z = 0$ valen $e^{0} = 1$:
+\[
+e^{z} = 1 + z + \frac{z^2}{2!} + \frac{z^3}{3!} + \Order{z^4} = 1 + z + \frac{z^2}{2} + \frac{z^3}{6} + \Order{z^4}
+\]
+\begin{align*}
+	e^{z} - R_{\mathrm{CN}}(z) &= \left(1 - 1\right) + \left(z - z\right) + \left(\frac{z^2}{2} - \frac{z^2}{2}\right)
+	+ \left(\frac16 - \frac14\right) z^3 + \Order{z^4}\\
+	&= \left(\frac{2}{12} - \frac{3}{12}\right) z^3 + \Order{z^4}\\
+	&= -\frac{z^3}{12} + \Order{z^4}
+\end{align*}
+
+\resultado{e^{z} - R_{\mathrm{CN}}(z) = -\frac{z^3}{12} + \Order{z^4}}
+
+\paso{4}{Error local}
+El error local es el que se comete en \textbf{un solo paso}
+\[
+e_{\mathrm{loc},n} = N(t_{n+1}) - N_{n+1}.
+\]
+Sustituyendo la exacta, CN y el resultado del paso 3 con $z = -\lambda h$:
+\begin{align*}
+	e_{\mathrm{loc},n} &= e^{-\lambda h}\,N(t_n) - R_{\mathrm{CN}}(-\lambda h)\,N(t_n)\\
+	&= \left[e^{-\lambda h} - R_{\mathrm{CN}}(-\lambda h)\right] N(t_n)\\
+	&= \left[-\frac{(-\lambda h)^3}{12} + \Order{h^4}\right] N(t_n)\\
+	&= \left[-\frac{-\lambda^3 h^3}{12} + \Order{h^4}\right] N(t_n)\\
+	&= \frac{\lambda^3 h^3}{12}\,N(t_n) + \Order{h^4}
+\end{align*}
+
+\resultado{e_{\mathrm{loc},n} = \frac{\lambda^3 h^3}{12}\,N_n + \Order{h^4}}
+Sale positivo, o sea que en cada paso CN se queda un poquito por debajo de la exacta. Es el mismo resultado que salió
+para CN en el Problema 1.
+
+\inciso{b}{Error local: tabla y orden observado}
+
+
+\paso{1}{calculo}
+Con $\lambda = 1$ se da un paso desde $t_0 = 0$ donde el valor inicial es exacto. Del inciso (a),
+$e_{\mathrm{loc},0} = \left[e^{-\lambda h} - R_{\mathrm{CN}}(-\lambda h)\right] N_0$
+\[
+e_{\mathrm{loc}}(h) = \frac{|e_{\mathrm{loc},0}|}{N_0} = \left| e^{-\lambda h} - R_{\mathrm{CN}}(-\lambda h) \right|
+= \left| e^{-h} - \frac{2 - h}{2 + h} \right| ,
+\]
+donde $R_{\mathrm{CN}}(-h) = \dfrac{1 - h/2}{1 + h/2}$ se multiplicó arriba y abajo por 2. Con $N_0 = 100$ el error
+saldría 100 veces mayor, pero el orden es el mismo.
+
+\paso{2}{Cálculo renglón por renglón}
+La resta se hace con todos los decimales de la calculadora, porque $e^{-h}$ y $R_{\mathrm{CN}}$ se parecen mucho y si se
+redondean antes se pierden cifras del error.
+\begin{align*}
+	h = 0.40:&\quad R_{\mathrm{CN}} = \frac{2 - 0.40}{2 + 0.40} = \frac{1.6}{2.4} = \frac23, y
+	\qquad e^{-0.40} \\
+	&\quad e_{\mathrm{loc}} = e^{-0.40} - \frac23 \approx 3.653379\times10^{-3}\\[6pt]
+	h = 0.20:&\quad R_{\mathrm{CN}} = \frac{2 - 0.20}{2 + 0.20} = \frac{1.8}{2.2} = \frac{9}{11} , y
+	\qquad e^{-0.20} \\
+	&\quad e_{\mathrm{loc}} = e^{-0.20} - \frac{9}{11} \approx 5.489349\times10^{-4}\\[6pt]
+	h = 0.10:&\quad R_{\mathrm{CN}} = \frac{2 - 0.10}{2 + 0.10} = \frac{1.9}{2.1} = \frac{19}{21} , y
+	\qquad e^{-0.10} \\
+	&\quad e_{\mathrm{loc}} = e^{-0.10} - \frac{19}{21} \approx 7.551327\times10^{-5}\\[6pt]
+	h = 0.05:&\quad R_{\mathrm{CN}} = \frac{2 - 0.05}{2 + 0.05} = \frac{1.95}{2.05} = \frac{39}{41} , y
+	\qquad e^{-0.05} \\
+	&\quad e_{\mathrm{loc}} = e^{-0.05} - \frac{39}{41} \approx 9.912306\times10^{-6}
+\end{align*}
+En todos $e^{-h} > R_{\mathrm{CN}}$que es la info que nos daba el inciso a)
+\[
+p_{\mathrm{loc}} = \frac{\ln\!\left(\dfrac{e_{\mathrm{loc}}(2h)}{e_{\mathrm{loc}}(h)}\right)}{\ln 2}
+\]
+\begin{align*}
+	h = 0.20:&\quad \frac{e_{\mathrm{loc}}(2h)}{e_{\mathrm{loc}}(h)} = \frac{3.653379\times10^{-3}}{5.489349\times10^{-4}} = 6.655396,
+	\qquad p_{\mathrm{loc}} = \frac{1.895428}{0.693147} = 2.734525\\
+	h = 0.10:&\quad \frac{e_{\mathrm{loc}}(2h)}{e_{\mathrm{loc}}(h)} = \frac{5.489349\times10^{-4}}{7.551327\times10^{-5}} = 7.269383,
+	\qquad p_{\mathrm{loc}} = \frac{1.983671}{0.693147} = 2.861833\\
+	h = 0.05:&\quad \frac{e_{\mathrm{loc}}(2h)}{e_{\mathrm{loc}}(h)} = \frac{7.551327\times10^{-5}}{9.912306\times10^{-6}} = 7.618134,
+	\qquad p_{\mathrm{loc}} = \frac{2.030531}{0.693147} = 2.929438
+\end{align*}
+\begin{center}
+	\begin{tabular}{cccc}\toprule
+		$h$ & $e_{\mathrm{loc}}(h)$ & $e_{\mathrm{loc}}(2h)/e_{\mathrm{loc}}(h)$ & $p_{\mathrm{loc}}$\\\midrule
+		0.40 & $3.653379\times10^{-3}$ & ---      & ---      \\
+		0.20 & $5.489349\times10^{-4}$ & 6.655396 & 2.734525 \\
+		0.10 & $7.551327\times10^{-5}$ & 7.269383 & 2.861833 \\
+		0.05 & $9.912306\times10^{-6}$ & 7.618134 & 2.929438 \\\bottomrule
+	\end{tabular}
+\end{center}
+
+\inciso{c}{Error global en \texorpdfstring{$T = 1$}{T = 1} y orden observado}
+\[
+N_{n} = R_{\mathrm{CN}}^{\,n}\,N_0, \qquad
+R_{\mathrm{CN}} = \frac{1 - \frac{h}{2}}{1 + \frac{h}{2}} = \frac{2 - h}{2 + h}, \qquad n = \frac{T}{h}, \qquad
+N(1) = 100\,e^{-1} \approx 36.787944
+\]
+\[
+E(h) = \left| N_{T/h} - 100\,e^{-1} \right|
+\]
+\begin{align*}
+	h = \tfrac12,\ n = 2:&\quad R_{\mathrm{CN}} = \frac{2 - \frac12}{2 + \frac12} = \frac35, \qquad
+	N_2 = 100\left(\frac35\right)^2 = 36.0\\
+	&\quad E = 100\,e^{-1} - N_2 \approx 7.879441\times10^{-1}\\[6pt]
+	h = \tfrac14,\ n = 4:&\quad R_{\mathrm{CN}} = \frac{2 - \frac14}{2 + \frac14} = \frac79, \qquad
+	N_4 = 100\left(\frac79\right)^4 \approx 36.595031\\
+	&\quad E = 100\,e^{-1} - N_4 \approx 1.929129\times10^{-1}\\[6pt]
+	h = \tfrac18,\ n = 8:&\quad R_{\mathrm{CN}} = \frac{2 - \frac18}{2 + \frac18} = \frac{15}{17}, \qquad
+	N_8 = 100\left(\frac{15}{17}\right)^8 \approx 36.739962\\
+	&\quad E = 100\,e^{-1} - N_8 \approx 4.798223\times10^{-2}\\[6pt]
+	h = \tfrac1{16},\ n = 16:&\quad R_{\mathrm{CN}} = \frac{2 - \frac1{16}}{2 + \frac1{16}} = \frac{31}{33}, \qquad
+	N_{16} = 100\left(\frac{31}{33}\right)^{16} \approx 36.775964\\
+	&\quad E = 100\,e^{-1} - N_{16} \approx 1.198031\times10^{-2}
+\end{align*}
+\[
+p_{\mathrm{glob}} = \frac{\ln\!\left(\dfrac{E(2h)}{E(h)}\right)}{\ln 2}, \qquad \ln 2 \approx 0.693147
+\]
+\begin{align*}
+	h = \tfrac14:&\quad \frac{E(2h)}{E(h)} = \frac{7.879441\times10^{-1}}{1.929129\times10^{-1}} = 4.084456,
+	\qquad p_{\mathrm{glob}} = \frac{1.407189}{0.693147} = 2.030144\\
+	h = \tfrac18:&\quad \frac{E(2h)}{E(h)} = \frac{1.929129\times10^{-1}}{4.798223\times10^{-2}} = 4.020506,
+	\qquad p_{\mathrm{glob}} = \frac{1.391408}{0.693147} = 2.007377\\
+	h = \tfrac1{16}:&\quad \frac{E(2h)}{E(h)} = \frac{4.798223\times10^{-2}}{1.198031\times10^{-2}} = 4.005090,
+	\qquad p_{\mathrm{glob}} = \frac{1.387566}{0.693147} = 2.001835
+\end{align*}
+\begin{center}
+	\begin{tabular}{ccccc}\toprule
+		$h$ & $N_{T/h}$ & $E(h)$ & $E(2h)/E(h)$ & $p_{\mathrm{glob}}$\\\midrule
+		1/2  & 36.000000 & $7.879441\times10^{-1}$ & ---      & ---      \\
+		1/4  & 36.595031 & $1.929129\times10^{-1}$ & 4.084456 & 2.030144 \\
+		1/8  & 36.739962 & $4.798223\times10^{-2}$ & 4.020506 & 2.007377 \\
+		1/16 & 36.775964 & $1.198031\times10^{-2}$ & 4.005090 & 2.001835 \\\bottomrule
+	\end{tabular}
+\end{center}
+\resultado{\frac{E(2h)}{E(h)} \to 4 = 2^2, \qquad p_{\mathrm{glob}} \to 2}
+
+\inciso{d}{Gráfica log--log, pendientes y por qué el orden baja de 3 a 2}
+
+\begin{center}
+	\begin{tabular}{cccc}\toprule
+		\multicolumn{4}{c}{Error local}\\\midrule
+		$h$ & $\log_{10} h$ & $e_{\mathrm{loc}}$ & $\log_{10} e_{\mathrm{loc}}$\\\midrule
+		0.40 & $-0.397940$ & $3.653379\times10^{-3}$ & $-2.437305$\\
+		0.20 & $-0.698970$ & $5.489349\times10^{-4}$ & $-3.260479$\\
+		0.10 & $-1.000000$ & $7.551327\times10^{-5}$ & $-4.121977$\\
+		0.05 & $-1.301030$ & $9.912306\times10^{-6}$ & $-5.003825$\\\bottomrule
+	\end{tabular}
+	
+	\bigskip
+	\begin{tabular}{cccc}\toprule
+		\multicolumn{4}{c}{Error global}\\\midrule
+		$h$ & $\log_{10} h$ & $E$ & $\log_{10} E$\\\midrule
+		1/2  & $-0.301030$ & $7.879441\times10^{-1}$ & $-0.103505$\\
+		1/4  & $-0.602060$ & $1.929129\times10^{-1}$ & $-0.714639$\\
+		1/8  & $-0.903090$ & $4.798223\times10^{-2}$ & $-1.318920$\\
+		1/16 & $-1.204120$ & $1.198031\times10^{-2}$ & $-1.921532$\\\bottomrule
+	\end{tabular}
+\end{center}
+
+\figurapython{p02_loglog}{Error local y global de CN en ejes log--log }{fig:p02_loglog}{0.6}
+
+Del repositorio de GitHub (\url{\repoCIN})
+
+\[
+m = \frac{\Delta \log_{10} E}{\Delta \log_{10} h}
+\]
+\begin{align*}
+	\text{local:}\quad  m &= \frac{-5.003825 - (-2.437305)}{-1.301030 - (-0.397940)}
+	= \frac{-2.566520}{-0.903090} = 2.841932\\
+	\text{global:}\quad m &= \frac{-1.921532 - (-0.103505)}{-1.204120 - (-0.301030)}
+	= \frac{-1.818027}{-0.903090} = 2.013118
+\end{align*}
+
+En cada paso se comete un error local $\approx C\,h^3$ y para llegar a $T$ se necesitan $n = T/h$ pasos. Como CN es
+estable ($|R| < 1$), los errores no se amplifican, solo se suman:
+\begin{align*}
+	E &\approx n \cdot C\,h^3\\
+	&= \frac{T}{h}\cdot C\,h^3\\
+	&= C\,T\,h^2
+\end{align*}
+\resultado{e_{\mathrm{loc}} = \Order{h^3}, \qquad E = \Order{h^2}}
